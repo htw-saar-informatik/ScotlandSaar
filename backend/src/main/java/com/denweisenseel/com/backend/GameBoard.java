@@ -1,6 +1,9 @@
 package com.denweisenseel.com.backend;
 
+import com.denweisenseel.com.backend.beans.GameStateBean;
+import com.denweisenseel.com.backend.data.Geolocation;
 import com.denweisenseel.com.backend.data.Node;
+import com.denweisenseel.com.backend.data.Player;
 import com.denweisenseel.com.backend.exceptions.PlayerNotFoundException;
 import com.denweisenseel.com.backend.tools.GraphBuilder;
 import com.denweisenseel.com.backend.tools.PushNotificationBuilder;
@@ -9,7 +12,6 @@ import com.googlecode.objectify.annotation.Id;
 
 import java.util.ArrayList;
 import java.util.Random;
-import java.util.logging.Logger;
 
 /**
  * Created by denwe on 16.09.2017.
@@ -100,6 +102,8 @@ public class GameBoard {
     }
 
 
+
+
     public boolean makeMove(String fireBaseToken, int targetNodeId) throws PlayerNotFoundException {
         Player p = getPlayerByFirebaseToken(fireBaseToken);
 
@@ -120,6 +124,20 @@ public class GameBoard {
             advanceGameState();
             return true;
         }
+        return false;
+    }
+
+    public boolean updatePosition(String firebaseToken, Geolocation location) throws PlayerNotFoundException {
+        Player p = getPlayerByFirebaseToken(firebaseToken);
+        p.setLocation(location);
+
+        if(p.getPlayerState() == Player.PlayerState.IS_MOVING) {
+            if (GraphBuilder.getGraph().get(p.getBoardPosition()).getLocation().distanceBetweenGeolocationInMetres(location) < 20) {
+                p.setPlayerState(Player.PlayerState.IS_DONE);
+                return true;
+            }
+        }
+
         return false;
     }
 
@@ -338,7 +356,7 @@ public class GameBoard {
 
     private Player getPlayerByFirebaseToken(String firebaseToken) throws PlayerNotFoundException {
         for(Player p : playerList) {
-            if(p.getFirebaseToken() == firebaseToken) return p;
+            if(p.getFirebaseToken().equals(firebaseToken)) return p;
         }
         throw new PlayerNotFoundException("Player with fireBaseToken"+ firebaseToken +" was not found");
     }
