@@ -6,5 +6,6 @@ package com.denweisenseel.com.backend.exceptions;
 
 public class PlayerNotFoundException extends Throwable {
     public PlayerNotFoundException(String s) {
+        super(s);
     }
 }

@@ -6,11 +6,14 @@
 
 package com.denweisenseel.com.backend;
 
+import com.denweisenseel.com.backend.beans.GameStateBean;
+import com.denweisenseel.com.backend.beans.ResponseBean;
+import com.denweisenseel.com.backend.data.Geolocation;
+import com.denweisenseel.com.backend.data.Player;
+import com.denweisenseel.com.backend.exceptions.PlayerNotFoundException;
 import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.ApiNamespace;
-import com.googlecode.objectify.Key;
-import com.googlecode.objectify.Result;
 
 import javax.inject.Named;
 
@@ -30,14 +33,11 @@ import static com.googlecode.objectify.ObjectifyService.ofy;
 )
 public class ScotlandSaarGameEndpoint {
 
-    /**
-     * A simple endpoint method that takes a name and says Hi back
-     */
 
     @ApiMethod(name = "sayHi")
     public ResponseBean sayHi(@Named("name") String name) {
         ResponseBean response = new ResponseBean();
-        response.setData("Hi, " + name);
+        response.setSuccess(true);
 
         return response;
     }
@@ -49,7 +49,8 @@ public class ScotlandSaarGameEndpoint {
         ofy().save().entity(gameBoard).now();
 
         ResponseBean response = new ResponseBean();
-        response.setData("ResponseId: " + gameBoard.id);
+        response.setSuccess(true);
+        response.setGameId(gameBoard.id);
         return response;
     }
 
@@ -68,7 +69,7 @@ public class ScotlandSaarGameEndpoint {
         }
 
         ofy().save().entity(gameBoard).now();
-        response.setData("Player:"+ t);
+        response.setSuccess(success);
         return response;
     }
 
@@ -80,6 +81,21 @@ public class ScotlandSaarGameEndpoint {
 
         GameStateBean response = gameBoard.getGameState(true);
         System.out.println(gameBoard.getPlayerList().size());
+
+        return response;
+    }
+
+
+    @ApiMethod(name = "updatePosition")
+    public ResponseBean updatePosition(@Named("id") long id,@Named("fireBaseToken") String fireBaseToken, Geolocation geolocation) throws PlayerNotFoundException {
+
+        GameBoard gameBoard = ofy().load().type(GameBoard.class).id(id).now();
+        boolean success = gameBoard.updatePosition(fireBaseToken,geolocation);
+        ofy().save().entity(gameBoard).now();
+
+        ResponseBean response = new ResponseBean();
+        System.out.println(gameBoard.getPlayerList().size());
+        response.setSuccess(success);
 
         return response;
     }

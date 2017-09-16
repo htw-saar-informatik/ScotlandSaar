@@ -1,5 +1,6 @@
-package com.denweisenseel.com.backend;
+package com.denweisenseel.com.backend.data;
 
+import com.denweisenseel.com.backend.data.Geolocation;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
 
@@ -16,9 +17,33 @@ public class Player {
 
     private int boardPosition = -1;
     private int targetPosition = -1;
+    private Geolocation geolocation = new Geolocation();
 
     private PlayerState playerState = PlayerState.IS_DONE;
 
+    public boolean isOwner() {
+        return isOwner;
+    }
+
+    public void setMisterX(boolean misterX) {
+        isMisterX = misterX;
+    }
+
+    public int getTargetPosition() {
+        return targetPosition;
+    }
+
+    public void setTargetPosition(int targetPosition) {
+        this.targetPosition = targetPosition;
+    }
+
+    public Geolocation getGeolocation() {
+        return geolocation;
+    }
+
+    public void setGeolocation(Geolocation geolocation) {
+        this.geolocation = geolocation;
+    }
 
     public String getName() {
         return name;
@@ -64,7 +89,11 @@ public class Player {
         return playerState;
     }
 
-    enum PlayerState {
+    public void setLocation(Geolocation location) {
+        this.geolocation = location;
+    }
+
+    public enum PlayerState {
 
         IS_MOVING,IS_DONE, IS_SELECTING;
     }

@@ -1,4 +1,6 @@
-package com.denweisenseel.com.backend;
+package com.denweisenseel.com.backend.beans;
+
+import com.denweisenseel.com.backend.data.Player;
 
 import java.util.ArrayList;
 
@@ -8,7 +10,7 @@ import java.util.ArrayList;
 
 public class GameStateBean {
 
-    ArrayList<Player> playerList;
+    ArrayList<PlayerBean> playerList;
 
     private byte    gameState;
     private boolean gameWon;
@@ -21,7 +23,7 @@ public class GameStateBean {
     }
 
     public void addPlayer(Player p) {
-        playerList.add(p);
+        playerList.add(new PlayerBean(p));
     }
 
     public void setGameState(byte gameState) {
@@ -40,11 +42,11 @@ public class GameStateBean {
         this.turnState = turnState;
     }
 
-    public ArrayList<Player> getPlayerList() {
+    public ArrayList<PlayerBean> getPlayerList() {
         return playerList;
     }
 
-    public void setPlayerList(ArrayList<Player> playerList) {
+    public void setPlayerList(ArrayList<PlayerBean> playerList) {
         this.playerList = playerList;
     }
 
