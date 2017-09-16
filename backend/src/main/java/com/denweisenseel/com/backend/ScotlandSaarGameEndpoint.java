@@ -9,9 +9,7 @@ package com.denweisenseel.com.backend;
 import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.ApiNamespace;
-import com.google.appengine.repackaged.com.google.protos.gdata.proto2api.Core;
 import com.googlecode.objectify.Key;
-import com.googlecode.objectify.ObjectifyService;
 import com.googlecode.objectify.Result;
 
 import javax.inject.Named;
@@ -43,49 +41,24 @@ public class ScotlandSaarGameEndpoint {
 
         return response;
     }
-    @ApiMethod(name = "createPlayer")
-    public ResponseBean createPlayer(@Named("name") String name) {
-        Player p = new Player();
-        p.setName(name);
-        Result<Key<Player>> result = ofy().save().entity(p);
-
-        if(p.id == null) { System.out.println("Nein!");}
-
-        result.now();
-
-        if(p.id != null) { System.out.println("Ja!");}
-
-
-
-        ResponseBean response = new ResponseBean();
-        response.setData("Re"+ p.getName() + " Id: " + p.id);
-        return response;
-    }
-    @ApiMethod(name = "getPlayer")
-    public ResponseBean getPlayer(@Named("id") long name) {
-        Player p = ofy().load().type(Player.class).id(name).now();
-        ResponseBean response = new ResponseBean();
-        response.setData("Re"+ p.getName() + " Id: " + p.id);
-        return response;
-    }
 
     @ApiMethod(name = "createGame")
-    public ResponseBean createGame(@Named("name") String name) {
+    public ResponseBean createGame(@Named("fireBaseToken") String fireBaseToken, @Named("playerName") String playerName, @Named("gameName") String gameName) {
         GameBoard gameBoard = new GameBoard();
-        Player p = new Player();
-        p.setName(name);
-        //gameBoard.addPlayer(p);
-
+        gameBoard.createGame(fireBaseToken,playerName,gameName);
         ofy().save().entity(gameBoard).now();
 
         ResponseBean response = new ResponseBean();
-        response.setData("Re"+ p.getName() + " Id: " + gameBoard.id);
+        response.setData("ResponseId: " + gameBoard.id);
         return response;
     }
 
-    @ApiMethod(name = "loadGame")
-    public ResponseBean loadGame(@Named("id") long id) {
+    @ApiMethod(name = "joinGame")
+    public ResponseBean joinGame(@Named("id") long id,@Named("fireBaseToken") String fireBaseToken, @Named("playerName") String playerName) {
         GameBoard gameBoard = ofy().load().type(GameBoard.class).id(id).now();
+
+        boolean success = gameBoard.joinGame(fireBaseToken,playerName);
+        System.out.println(success);
 
         ResponseBean response = new ResponseBean();
         String t = "";
@@ -93,9 +66,25 @@ public class ScotlandSaarGameEndpoint {
         for(Player p : gameBoard.getPlayerList()) {
             t = t + p.getName() + " | ";
         }
+
+        ofy().save().entity(gameBoard).now();
         response.setData("Player:"+ t);
         return response;
     }
+
+
+    @ApiMethod(name = "test")
+    public GameStateBean test(@Named("id") long id) {
+
+        GameBoard gameBoard = ofy().load().type(GameBoard.class).id(id).now();
+
+        GameStateBean response = gameBoard.getGameState(true);
+        System.out.println(gameBoard.getPlayerList().size());
+
+        return response;
+    }
+
+
 
 
 }

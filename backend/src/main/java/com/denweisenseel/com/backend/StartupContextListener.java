@@ -12,7 +12,6 @@ import javax.servlet.ServletContextListener;
 public class StartupContextListener implements ServletContextListener {
     @Override
     public void contextInitialized(ServletContextEvent sce) {
-        ObjectifyService.register(Player.class);
         ObjectifyService.register(GameBoard.class);
     }
 

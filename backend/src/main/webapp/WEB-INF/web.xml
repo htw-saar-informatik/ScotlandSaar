@@ -18,8 +18,7 @@
         <servlet-class>com.google.api.server.spi.SystemServiceServlet</servlet-class>
         <init-param>
             <param-name>services</param-name>
-            <param-value>com.denweisenseel.com.backend.ScotlandSaarGameEndpoint,
-                com.denweisenseel.com.backend.PlayerEndpoint</param-value>
+            <param-value>com.denweisenseel.com.backend.ScotlandSaarGameEndpoint</param-value>
         </init-param>
     </servlet>
 	
