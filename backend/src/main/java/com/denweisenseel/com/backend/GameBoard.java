@@ -10,7 +10,9 @@ import com.denweisenseel.com.backend.tools.PushNotificationBuilder;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Random;
 
 /**
@@ -32,9 +34,9 @@ public class GameBoard {
     private boolean X_TURN = false;
     private boolean PLAYER_TURN = true;
 
-    private byte GAMESTATE_SETUP = 0x01;
-    private byte GAMESTATE_RUNNING = 0x02;
-    private byte GAMESTATE_OVER = 0x03;
+    public static final byte GAMESTATE_SETUP = 0x01;
+    public static final byte GAMESTATE_RUNNING = 0x02;
+    public static final byte GAMESTATE_OVER = 0x03;
 
     //GameVars
     private byte    gameState = GAMESTATE_SETUP;
@@ -57,6 +59,9 @@ public class GameBoard {
         p.setOwner(true);
         p.setName(playerName);
         p.setFirebaseToken(firebaseToken);
+
+        this.gameName = gameName;
+        this.creatorName = playerName;
 
         addPlayer(p);
 
@@ -363,6 +368,7 @@ public class GameBoard {
                 new PushNotificationBuilder()
                         .addRecipient(q.getFirebaseToken())
                         .setNotificationType(PushNotificationBuilder.PushNotificationType.LOBBY_PLAYER_JOIN)
+                        .addDataAttribute(PushNotificationBuilder.DataType.PLAYER_NAME, p.getName())
                         .push();
             }
         }
@@ -407,8 +413,44 @@ public class GameBoard {
         return gsb;
     }
 
+    public byte getGameState() {
+        return gameState;
+    }
+
 
     public ArrayList<Player> getPlayerList() {
         return playerList;
+    }
+
+    public String getName() {
+        return gameName;
+    }
+
+    public String getCreator() {
+        return creatorName;
+    }
+
+    public void sendChatMessage(String token, String message) throws PlayerNotFoundException {
+        Player p = getPlayerByFirebaseToken(token);
+
+        for(Player e : playerList) {
+            if(gameState == GAMESTATE_SETUP) {
+                new PushNotificationBuilder()
+                        .addRecipient(e.getFirebaseToken())
+                        .setNotificationType(PushNotificationBuilder.PushNotificationType.LOBBY_PLAYER_MESSAGE)
+                        .addDataAttribute(PushNotificationBuilder.DataType.PLAYER_MESSAGE, message)
+                        .addDataAttribute(PushNotificationBuilder.DataType.PLAYER_NAME, p.getName())
+                        .addDataAttribute(PushNotificationBuilder.DataType.TIME_STAMP, new SimpleDateFormat("HH.mm").format(new Date()))
+                        .push();
+            } else {
+                new PushNotificationBuilder()
+                        .addRecipient(e.getFirebaseToken())
+                        .setNotificationType(PushNotificationBuilder.PushNotificationType.CHAT_NEW_MESSAGE)
+                        .addDataAttribute(PushNotificationBuilder.DataType.PLAYER_MESSAGE, message)
+                        .addDataAttribute(PushNotificationBuilder.DataType.PLAYER_NAME, p.getName())
+                        .addDataAttribute(PushNotificationBuilder.DataType.TIME_STAMP, new SimpleDateFormat("HH.mm").format(new Date()))
+                        .push();
+            }
+        }
     }
 }

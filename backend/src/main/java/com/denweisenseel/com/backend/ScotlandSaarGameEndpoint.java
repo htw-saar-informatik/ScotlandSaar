@@ -6,6 +6,7 @@
 
 package com.denweisenseel.com.backend;
 
+import com.denweisenseel.com.backend.beans.GameListBean;
 import com.denweisenseel.com.backend.beans.GameStateBean;
 import com.denweisenseel.com.backend.beans.ResponseBean;
 import com.denweisenseel.com.backend.data.Geolocation;
@@ -14,6 +15,14 @@ import com.denweisenseel.com.backend.exceptions.PlayerNotFoundException;
 import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.ApiNamespace;
+import com.google.appengine.api.datastore.DatastoreService;
+import com.google.appengine.api.datastore.DatastoreServiceFactory;
+import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.FetchOptions;
+import com.google.appengine.api.datastore.Query;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.inject.Named;
 
@@ -62,14 +71,21 @@ public class ScotlandSaarGameEndpoint {
         System.out.println(success);
 
         ResponseBean response = new ResponseBean();
-        String t = "";
-
-        for(Player p : gameBoard.getPlayerList()) {
-            t = t + p.getName() + " | ";
-        }
 
         ofy().save().entity(gameBoard).now();
         response.setSuccess(success);
+        return response;
+    }
+
+    @ApiMethod(name = "startGame")
+    public ResponseBean startGame(@Named("id") long id,@Named("fireBaseToken") String fireBaseToken) {
+        GameBoard gameBoard = ofy().load().type(GameBoard.class).id(id).now();
+        gameBoard.startGame();
+
+        ResponseBean response = new ResponseBean();
+
+        ofy().save().entity(gameBoard).now();
+        response.setSuccess(true);
         return response;
     }
 
@@ -96,6 +112,41 @@ public class ScotlandSaarGameEndpoint {
         ResponseBean response = new ResponseBean();
         System.out.println(gameBoard.getPlayerList().size());
         response.setSuccess(success);
+
+        return response;
+    }
+
+    @ApiMethod(name = "gameList")
+    public ArrayList<GameListBean> getGameList() {
+
+        ArrayList<GameListBean> gameList= new ArrayList<GameListBean>();
+
+        //TODO We could do this via streams, but, because I didnt want to use my brain, here is me doing some loopy stuff
+
+        List<GameBoard> games = ofy().load().type(GameBoard.class).list();
+
+        for(GameBoard game : games) {
+            GameListBean bean = new GameListBean();
+            if(game.getGameState() == GameBoard.GAMESTATE_SETUP) {
+                bean.setGameId(game.id);
+                bean.setGameName(game.getName());
+                bean.setHost(game.getCreator());
+                bean.setPlayerCount(game.getPlayerList().size());
+                gameList.add(bean);
+            }
+        }
+        return gameList;
+    }
+
+    @ApiMethod(name = "sendChatMessage")
+    public ResponseBean sendChatMessage(@Named("id") long id, @Named("fireBaseToken") String token, @Named("message") String message) throws PlayerNotFoundException {
+
+        GameBoard gameBoard = ofy().load().type(GameBoard.class).id(id).now();
+        gameBoard.sendChatMessage(token,message);
+
+
+        ResponseBean response = new ResponseBean();
+        response.setSuccess(true);
 
         return response;
     }

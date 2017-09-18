@@ -56,7 +56,7 @@ public class UsernameInputFragment extends DialogFragment {
                             Toast.makeText(getActivity(), "Username darf nur aus Buchstaben bestehen.", Toast.LENGTH_LONG).show();
                             Log.v("TEST","TEST");
                         } else {
-                            SharedPreferences.Editor editor = getActivity().getPreferences(Context.MODE_PRIVATE).edit();
+                            SharedPreferences.Editor editor = getActivity().getSharedPreferences(getString(R.string.gameData),Context.MODE_PRIVATE).edit();
                             editor.putString(getString(R.string.username), usernameInput.getText().toString());
                             editor.commit();
                             Toast.makeText(getActivity(), "Username gespeichert!", Toast.LENGTH_LONG).show();

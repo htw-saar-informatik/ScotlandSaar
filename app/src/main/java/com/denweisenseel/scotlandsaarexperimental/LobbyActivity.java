@@ -2,6 +2,10 @@ package com.denweisenseel.scotlandsaarexperimental;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.SharedPreferences;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -15,10 +19,22 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.denweisenseel.scotlandsaarexperimental.adapter.ChatMessageAdapter;
+import com.denweisenseel.scotlandsaarexperimental.api.RequestBuilder;
 import com.denweisenseel.scotlandsaarexperimental.data.ChatDataParcelable;
+import com.denweisenseel.scotlandsaarexperimental.data.VolleyRequestQueue;
+import com.google.firebase.iid.FirebaseInstanceId;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class LobbyActivity extends AppCompatActivity {
 
@@ -29,6 +45,7 @@ public class LobbyActivity extends AppCompatActivity {
     private BroadcastReceiver pushUpdateReceiver;
 
     private long gameId;
+    private final String TAG = "GameLobby";
 
 
     @Override
@@ -50,7 +67,7 @@ public class LobbyActivity extends AppCompatActivity {
                 if (actionId == EditorInfo.IME_ACTION_DONE || event.getAction() == KeyEvent.KEYCODE_ENTER) {
                     Log.v("ChatMessage","Send:"+chatMessageInput.getText().toString());
 
-                    sendChatMessage();
+                    sendChatMessage(chatMessageInput.getText().toString());
                     chatMessageInput.setText("");
                     chatMessageInput.findFocus();
 
@@ -61,14 +78,56 @@ public class LobbyActivity extends AppCompatActivity {
             }
         });
 
-
         if(getIntent().getBooleanExtra(getString(R.string.host), false)) {
             Button launchGame = (Button) findViewById(R.id.Lobby_Start_Game);
             launchGame.setVisibility(View.VISIBLE);
         }
+
+        pushUpdateReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if(intent.getAction().equals(getString(R.string.LOBBY_PLAYER_JOIN))) {
+                    ArrayList<String> argList = intent.getStringArrayListExtra(getString(R.string.BROADCAST_DATA));
+
+                    String playerName = argList.get(0);
+                    chatList.add(new ChatDataParcelable(playerName,"joined the lobby", new SimpleDateFormat("HH.mm").format(new Date())));
+                    cAdapater.notifyDataSetChanged();
+                } else if(intent.getAction().equals(getString(R.string.LOBBY_PLAYER_MESSAGE))) {
+                    ArrayList<String> argList = intent.getStringArrayListExtra(getString(R.string.BROADCAST_DATA));
+                    chatList.add(new ChatDataParcelable(argList.get(0),argList.get(1),argList.get(2)));
+                    cAdapater.notifyDataSetChanged();
+                } else {
+                    Log.i("NEIN","NEIN");
+                }
+            }
+        };
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(pushUpdateReceiver, new IntentFilter(getString(R.string.LOBBY_PLAYER_JOIN)));
+        LocalBroadcastManager.getInstance(this).registerReceiver(pushUpdateReceiver, new IntentFilter(getString(R.string.LOBBY_PLAYER_MESSAGE)));
+
+
     }
 
-    private void sendChatMessage() {
-        chatList.add(new ChatDataParcelable("1","2","3"));
+    private void sendChatMessage(final String message) {
+
+        String firebaseToken = FirebaseInstanceId.getInstance().getToken();
+        String gameId = String.valueOf(getSharedPreferences(getString(R.string.gameData),Context.MODE_PRIVATE).getLong(getString(R.string.gameId), 0));
+        String[] args = {gameId,firebaseToken, message};
+
+
+        JsonObjectRequest gameRequest = new JsonObjectRequest(Request.Method.POST, RequestBuilder.buildRequestUrl(RequestBuilder.CHAT_MESSAGE, args ),null, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                Log.i(TAG, "Message sent " + message);
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e(TAG, error.toString());
+            }
+        });
+
+        VolleyRequestQueue.getInstance(this).addToRequestQueue(gameRequest);
+
     }
 }
