@@ -173,6 +173,7 @@ public class PushNotificationBuilder {
         GAME_REVEAL_X("REVEAL_X"),
         GAME_WON("GAME_WON"),
         GAME_LOST("GAME_LOST"),
+        GAME_X_SURROUNDED("MISTER_X_SURROUNDED"),
 
         //CHAT related
         CHAT_NEW_MESSAGE("NEW_MESSAGE");

@@ -151,6 +151,15 @@ public class GameBoard {
         }
     }
 
+    private boolean canMisterXMove() {
+        Player p = playerList.get(misterXId);
+        Node n = GraphBuilder.getGraph().get(p.getBoardPosition());
+
+        for(Node neighbour : n.getNeighbours()) {
+            if(isFree(neighbour.getId())) return true;
+        }
+        return false;
+    }
 
     private boolean isFree(int targetNodeId) {
         boolean free = true;
@@ -247,7 +256,21 @@ public class GameBoard {
             broadcastMisterXPosition();
         }
 
-        notifyMisterXStartTurn();
+        if(canMisterXMove()) {
+            notifyMisterXStartTurn();
+        } else {
+            notifyMisterXSurrounded();
+        }
+    }
+
+    private void notifyMisterXSurrounded() {
+        for(Player q : playerList) {
+            new PushNotificationBuilder()
+                    .addRecipient(q.getFirebaseToken())
+                    .setNotificationType(PushNotificationBuilder.PushNotificationType.GAME_X_SURROUNDED)
+                    .addDataAttribute(PushNotificationBuilder.DataType.MISTER_X_POSITION, playerList.get(misterXId).getBoardPosition())
+                    .push();
+        }
     }
 
     private void broadcastMisterXPosition() {
