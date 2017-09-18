@@ -79,14 +79,16 @@ public class ScotlandSaarGameEndpoint {
 
     @ApiMethod(name = "startGame")
     public ResponseBean startGame(@Named("id") long id,@Named("fireBaseToken") String fireBaseToken) {
-        GameBoard gameBoard = ofy().load().type(GameBoard.class).id(id).now();
-        gameBoard.startGame();
-
         ResponseBean response = new ResponseBean();
-
-        ofy().save().entity(gameBoard).now();
-        response.setSuccess(true);
-        return response;
+        GameBoard gameBoard = ofy().load().type(GameBoard.class).id(id).now();
+        if(gameBoard.startGame(fireBaseToken)) {
+            ofy().save().entity(gameBoard).now();
+            response.setSuccess(true);
+            return response;
+        } else {
+            response.setSuccess(false);
+            return response;
+        }
     }
 
 

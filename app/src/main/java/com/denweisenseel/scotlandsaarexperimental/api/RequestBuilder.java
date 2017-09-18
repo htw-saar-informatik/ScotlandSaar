@@ -25,6 +25,9 @@ public class RequestBuilder {
     private static final String CHAT_MESSAGE_FUNCTION = "sendChatMessage";
     private static final int CHAT_MESSAGE_ARGS = 3;
 
+    public static final int START_GAME = 0x04;
+    private static final String START_GAME_FUNCTION = "startGame";
+    private static final int START_GAME_ARGS = 2;
 
     public static String buildRequestUrl(int requestType, String[] args) {
 
@@ -60,6 +63,12 @@ public class RequestBuilder {
                     builder.append(args[i]);
                 }
                 break;
+            case START_GAME:
+                builder.append(START_GAME_FUNCTION);
+                for(int i = 0; i < START_GAME_ARGS; ++i) {
+                    builder.append("/");
+                    builder.append(args[i]);
+                }
 
         }
 

@@ -37,6 +37,9 @@ public class PushMessageHandlerService extends FirebaseMessagingService {
             Log.d(TAG, "Message data payload: " + remoteMessage.getData());
 
             Map<String, String> m = remoteMessage.getData();
+
+            //LOBBY:
+
             if(m.get((getString(R.string.protocol_type))).equals(getString(R.string.LOBBY_PLAYER_JOIN))) {
                 String[] data = {m.get(getString(R.string.LOBBY_PLAYER_JOIN_PLAYER_NAME))};
                 forwardToLobby(getString(R.string.LOBBY_PLAYER_JOIN),   data);
@@ -47,8 +50,15 @@ public class PushMessageHandlerService extends FirebaseMessagingService {
                 String stamp = m.get(getString(R.string.TIME_STAMP));
                 String[] data = {message,name,stamp};
                 forwardToLobby(getString(R.string.LOBBY_PLAYER_MESSAGE),   data);
-
+            }   else if(m.get((getString(R.string.protocol_type))).equals(getString(R.string.LOBBY_GAME_START))) {
+                forwardToLobby(getString(R.string.LOBBY_GAME_START),   null);
             }
+
+
+            //GAME
+
+
+
         }
 
         // Check if message contains a notification payload.
@@ -62,10 +72,13 @@ public class PushMessageHandlerService extends FirebaseMessagingService {
 
     private void forwardToLobby(String type, String[] data) {
         Intent i = new Intent(type);
-        List l = Arrays.asList(data);
-        ArrayList<String> list = new ArrayList<>();
-        list.addAll(l);
-        i.putStringArrayListExtra(getString(R.string.BROADCAST_DATA), list);
+
+        if(data != null) {
+            List l = Arrays.asList(data);
+            ArrayList<String> list = new ArrayList<>();
+            list.addAll(l);
+            i.putStringArrayListExtra(getString(R.string.BROADCAST_DATA), list);
+        }
         LocalBroadcastManager.getInstance(this).sendBroadcast(i);
     }
 

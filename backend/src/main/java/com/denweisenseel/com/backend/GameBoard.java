@@ -82,7 +82,16 @@ public class GameBoard {
         return false;
     }
 
-    public boolean startGame() {
+    public boolean startGame(String firebaseToken) {
+
+        for(Player p : playerList) {
+            if(p.isOwner()) {
+                if(!p.getFirebaseToken().equals(firebaseToken)) {
+                    return false;
+                }
+            }
+        }
+
         if(gameState != GAMESTATE_SETUP) return false;
 
         //Setup game:
@@ -349,7 +358,6 @@ public class GameBoard {
         }
     }
 
-
     private void notifyPlayerLeftLobby(Player p) {
         for(Player q : playerList) {
             if(p.getFirebaseToken() != q.getFirebaseToken()) {
@@ -360,7 +368,6 @@ public class GameBoard {
             }
         }
     }
-
 
     private void notifyPlayerJoinedLobby(Player p) {
         for(Player q : playerList) {
