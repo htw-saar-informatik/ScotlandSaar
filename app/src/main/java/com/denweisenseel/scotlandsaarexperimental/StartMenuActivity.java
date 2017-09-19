@@ -72,7 +72,7 @@ public class StartMenuActivity extends AppCompatActivity {
     private void startGame() {
 
         String firebaseToken = FirebaseInstanceId.getInstance().getToken();
-        String username = getPreferences(Context.MODE_PRIVATE).getString(getString(R.string.username),"NULL");
+        String username = getSharedPreferences(getString(R.string.gameData),Context.MODE_PRIVATE).getString(getString(R.string.username),"NULL");
         String gameName = "Game"; //TODO create gameName dialog for further customization (2 Hours)
         String[] requestARGS = {firebaseToken,username,gameName};
 
@@ -83,7 +83,7 @@ public class StartMenuActivity extends AppCompatActivity {
                     long gameId = response.getLong(getString(R.string.protocol_gameId));
                     saveGameId(gameId);
                     Log.i(TAG, "Game created! ID: "+gameId);
-                    Intent i = new Intent(StartMenuActivity.this, LobbyActivity.class);
+                    Intent i = new Intent(StartMenuActivity.this, GameActivity.class);
                     i.putExtra(getString(R.string.host), true);
                     startActivity(i);
 
