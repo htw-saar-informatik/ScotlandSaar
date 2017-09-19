@@ -1,3 +1,47 @@
 <resources>
     <string name="app_name">ScotlandSaar Experimental</string>
+    <string name="preference_file_key">com.denweisenseel.scotlandsaar.DATAPLEASE</string>
+    <string name="username">username</string>
+    <string name="title_activity_start_game">StartGameActivity</string>
+    <string name="host">host</string>
+    <string name="GAME_POSITION_REACHED">REACHED_POSITION</string>
+    <string name="GAME_POSITION_SELECTED">SELECTED_POSITION</string>
+    <string name="GAME_TURN_START_PLAYER">TURN_START_PLAYER</string>
+    <string name="GAME_TURN_START_X">TURN_START_X</string>
+    <string name="LOBBY_PLAYER_JOIN">PLAYER_JOIN</string>
+    <string name="LOBBY_PLAYER_JOIN_PLAYER_NAME">playerName</string>
+    <string name="LOBBY_PLAYER_LEAVE">PLAYER_LEFT</string>
+    <string name="LOBBY_PLAYER_MESSAGE">LOBBY_MESSAGE</string>
+    <string name="LOBBY_GAME_START">GAME_START</string>
+    <string name="GAME_REVEAL_X">REVEAL_X</string>
+    <string name="GAME_WON">GAME_WON</string>
+    <string name="GAME_LOST">GAME_LOST</string>
+    <string name="GAME_X_SURROUNDED">MISTER_X_SURROUNDED</string>
+    <string name="CHAT_NEW_MESSAGE">NEW_MESSAGE</string>
+    <string name="hint_chat_message">Enter message..</string>
+    <string name="lobby_start_game_button">Launch Game</string>
+    <string name="protocol_gameId">gameId</string>
+    <string name="gameId">current_gameId</string>
+    <string name="GAME_LIST_ITEM_GAMENAME">gameName</string>
+    <string name="GAME_LIST_ITEM_GAMEID">gameId</string>
+    <string name="protocol_success">success</string>
+    <string name="protocol_type">type</string>
+    <string name="gameData">gameDataFile</string>
+    <string name="BROADCAST_DATA">broadcast_data</string>
+
+    <string name="PLAYER_NAME">playerName</string>
+    <string name="PLAYER_MESSAGE">playerMessage</string>
+    <string name="TIME_STAMP">timeStamp</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_game">GameActivity</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
+    <string name="game_map">Map</string>
+    <string name="game_chat">Chat</string>
+    <string name="game_dashboard">Dashboard</string>
+
+
 </resources>

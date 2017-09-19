@@ -46,6 +46,9 @@ public class PushNotificationBuilder {
         public static final String MISTER_X_POSITION = "xPosition";
         public static final String PLAYER_SELECT_POSITION ="playerPosition";
         public static final String PLAYER_SELECT_ID = "playerPositionId";
+        public static final String PLAYER_NAME = "playerName";
+        public static final String PLAYER_MESSAGE = "playerMessage";
+        public static final String TIME_STAMP = "timeStamp";
     }
 
 
@@ -111,7 +114,7 @@ public class PushNotificationBuilder {
 
 
     private static class PushServer {
-        final static String FIREBASE_SERVER_KEY = "AAAAMwpqJ1A:APA91bEZMMVTrVVqdT_C_bvYLqLU-UQzAhw6W1ix73OAEdXsYLf-ZXNNKV9V9RQRMiFKEbDIikhT8k6-Dg0yVmPUFfjW6RAA4fYbIoIy497DHdtR_3JiJaBpEieLJFu4lKInpZsvTQFj";
+        final static String FIREBASE_SERVER_KEY = "AAAAfvb3Lj0:APA91bEl88SNgryGHl9tkuJJZz_7l2kUJa929HCiCJ6RgXBRXBlMMimMjDwB6vM3JEWt-xbvDWljEWVyYw8T6htgWpn5F75bQOT9hEp1YmeEqYtvKTdMWjLz_h644Cfph4tZPNuOdd_N";
         final static String API_URL = "https://fcm.googleapis.com/fcm/send";
 
         public static void push(PushNotification n) {
@@ -173,6 +176,7 @@ public class PushNotificationBuilder {
         GAME_REVEAL_X("REVEAL_X"),
         GAME_WON("GAME_WON"),
         GAME_LOST("GAME_LOST"),
+        GAME_X_SURROUNDED("MISTER_X_SURROUNDED"),
 
         //CHAT related
         CHAT_NEW_MESSAGE("NEW_MESSAGE");

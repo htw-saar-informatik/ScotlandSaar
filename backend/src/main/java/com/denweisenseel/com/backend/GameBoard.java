@@ -1,15 +1,19 @@
 package com.denweisenseel.com.backend;
 
+import com.denweisenseel.com.backend.beans.GameStateBean;
+import com.denweisenseel.com.backend.data.Geolocation;
 import com.denweisenseel.com.backend.data.Node;
+import com.denweisenseel.com.backend.data.Player;
 import com.denweisenseel.com.backend.exceptions.PlayerNotFoundException;
 import com.denweisenseel.com.backend.tools.GraphBuilder;
 import com.denweisenseel.com.backend.tools.PushNotificationBuilder;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Random;
-import java.util.logging.Logger;
 
 /**
  * Created by denwe on 16.09.2017.
@@ -30,9 +34,9 @@ public class GameBoard {
     private boolean X_TURN = false;
     private boolean PLAYER_TURN = true;
 
-    private byte GAMESTATE_SETUP = 0x01;
-    private byte GAMESTATE_RUNNING = 0x02;
-    private byte GAMESTATE_OVER = 0x03;
+    public static final byte GAMESTATE_SETUP = 0x01;
+    public static final byte GAMESTATE_RUNNING = 0x02;
+    public static final byte GAMESTATE_OVER = 0x03;
 
     //GameVars
     private byte    gameState = GAMESTATE_SETUP;
@@ -56,6 +60,9 @@ public class GameBoard {
         p.setName(playerName);
         p.setFirebaseToken(firebaseToken);
 
+        this.gameName = gameName;
+        this.creatorName = playerName;
+
         addPlayer(p);
 
         return true;
@@ -75,7 +82,16 @@ public class GameBoard {
         return false;
     }
 
-    public boolean startGame() {
+    public boolean startGame(String firebaseToken) {
+
+        for(Player p : playerList) {
+            if(p.isOwner()) {
+                if(!p.getFirebaseToken().equals(firebaseToken)) {
+                    return false;
+                }
+            }
+        }
+
         if(gameState != GAMESTATE_SETUP) return false;
 
         //Setup game:
@@ -98,6 +114,8 @@ public class GameBoard {
         return true;
 
     }
+
+
 
 
     public boolean makeMove(String fireBaseToken, int targetNodeId) throws PlayerNotFoundException {
@@ -123,6 +141,20 @@ public class GameBoard {
         return false;
     }
 
+    public boolean updatePosition(String firebaseToken, Geolocation location) throws PlayerNotFoundException {
+        Player p = getPlayerByFirebaseToken(firebaseToken);
+        p.setLocation(location);
+
+        if(p.getPlayerState() == Player.PlayerState.IS_MOVING) {
+            if (GraphBuilder.getGraph().get(p.getBoardPosition()).getLocation().distanceBetweenGeolocationInMetres(location) < 20) {
+                p.setPlayerState(Player.PlayerState.IS_DONE);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private void notifyPlayerDone(Player p) {
         for(Player q : playerList) {
             new PushNotificationBuilder()
@@ -133,6 +165,15 @@ public class GameBoard {
         }
     }
 
+    private boolean canMisterXMove() {
+        Player p = playerList.get(misterXId);
+        Node n = GraphBuilder.getGraph().get(p.getBoardPosition());
+
+        for(Node neighbour : n.getNeighbours()) {
+            if(isFree(neighbour.getId())) return true;
+        }
+        return false;
+    }
 
     private boolean isFree(int targetNodeId) {
         boolean free = true;
@@ -229,7 +270,21 @@ public class GameBoard {
             broadcastMisterXPosition();
         }
 
-        notifyMisterXStartTurn();
+        if(canMisterXMove()) {
+            notifyMisterXStartTurn();
+        } else {
+            notifyMisterXSurrounded();
+        }
+    }
+
+    private void notifyMisterXSurrounded() {
+        for(Player q : playerList) {
+            new PushNotificationBuilder()
+                    .addRecipient(q.getFirebaseToken())
+                    .setNotificationType(PushNotificationBuilder.PushNotificationType.GAME_X_SURROUNDED)
+                    .addDataAttribute(PushNotificationBuilder.DataType.MISTER_X_POSITION, playerList.get(misterXId).getBoardPosition())
+                    .push();
+        }
     }
 
     private void broadcastMisterXPosition() {
@@ -303,7 +358,6 @@ public class GameBoard {
         }
     }
 
-
     private void notifyPlayerLeftLobby(Player p) {
         for(Player q : playerList) {
             if(p.getFirebaseToken() != q.getFirebaseToken()) {
@@ -315,13 +369,13 @@ public class GameBoard {
         }
     }
 
-
     private void notifyPlayerJoinedLobby(Player p) {
         for(Player q : playerList) {
             if(p.getFirebaseToken() != q.getFirebaseToken()) {
                 new PushNotificationBuilder()
                         .addRecipient(q.getFirebaseToken())
                         .setNotificationType(PushNotificationBuilder.PushNotificationType.LOBBY_PLAYER_JOIN)
+                        .addDataAttribute(PushNotificationBuilder.DataType.PLAYER_NAME, p.getName())
                         .push();
             }
         }
@@ -338,7 +392,7 @@ public class GameBoard {
 
     private Player getPlayerByFirebaseToken(String firebaseToken) throws PlayerNotFoundException {
         for(Player p : playerList) {
-            if(p.getFirebaseToken() == firebaseToken) return p;
+            if(p.getFirebaseToken().equals(firebaseToken)) return p;
         }
         throw new PlayerNotFoundException("Player with fireBaseToken"+ firebaseToken +" was not found");
     }
@@ -366,8 +420,44 @@ public class GameBoard {
         return gsb;
     }
 
+    public byte getGameState() {
+        return gameState;
+    }
+
 
     public ArrayList<Player> getPlayerList() {
         return playerList;
+    }
+
+    public String getName() {
+        return gameName;
+    }
+
+    public String getCreator() {
+        return creatorName;
+    }
+
+    public void sendChatMessage(String token, String message) throws PlayerNotFoundException {
+        Player p = getPlayerByFirebaseToken(token);
+
+        for(Player e : playerList) {
+            if(gameState == GAMESTATE_SETUP) {
+                new PushNotificationBuilder()
+                        .addRecipient(e.getFirebaseToken())
+                        .setNotificationType(PushNotificationBuilder.PushNotificationType.LOBBY_PLAYER_MESSAGE)
+                        .addDataAttribute(PushNotificationBuilder.DataType.PLAYER_MESSAGE, message)
+                        .addDataAttribute(PushNotificationBuilder.DataType.PLAYER_NAME, p.getName())
+                        .addDataAttribute(PushNotificationBuilder.DataType.TIME_STAMP, new SimpleDateFormat("HH.mm").format(new Date()))
+                        .push();
+            } else {
+                new PushNotificationBuilder()
+                        .addRecipient(e.getFirebaseToken())
+                        .setNotificationType(PushNotificationBuilder.PushNotificationType.CHAT_NEW_MESSAGE)
+                        .addDataAttribute(PushNotificationBuilder.DataType.PLAYER_MESSAGE, message)
+                        .addDataAttribute(PushNotificationBuilder.DataType.PLAYER_NAME, p.getName())
+                        .addDataAttribute(PushNotificationBuilder.DataType.TIME_STAMP, new SimpleDateFormat("HH.mm").format(new Date()))
+                        .push();
+            }
+        }
     }
 }

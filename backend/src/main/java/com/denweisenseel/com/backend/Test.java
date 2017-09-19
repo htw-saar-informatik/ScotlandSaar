@@ -14,7 +14,6 @@ public class Test {
         GameBoard b = new GameBoard();
         b.createGame("123","Dennis", "GAME");
         b.joinGame("321","isnneD");
-        b.startGame();
 
         b.makeMove("123",30);
     }

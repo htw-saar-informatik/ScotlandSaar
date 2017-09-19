@@ -8,16 +8,15 @@ import com.google.appengine.repackaged.com.google.gson.JsonObject;
 
 public class Geolocation {
 
-    double latitude;
-    double longitude;
+    double latitude= 0;
+    double longitude = 0;
 
     public Geolocation(double lat, double lon) {
-        double latitude = lat;
-        double longitude = lon;
+        latitude = lat;
+        longitude = lon;
     }
 
     public Geolocation() {
-
     }
 
     public double distanceBetweenGeolocationInMetres(Geolocation location) {
@@ -57,15 +56,6 @@ public class Geolocation {
         this.longitude = longitude;
     }
 
-    public JsonObject getData() {
-        JsonObject data = new JsonObject();
-        data.addProperty("Latitude", latitude);
-        data.addProperty("Longitude", longitude);
-        return data;
-    }
 
-    public String toString() {
-        return "[Location:"+latitude+ "," + longitude + "]";
-    }
 
 }
