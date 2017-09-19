@@ -67,8 +67,6 @@ public class GameListActivity extends AppCompatActivity {
     }
 
     private void joinGame(final long gameId) {
-
-
         String firebaseToken = FirebaseInstanceId.getInstance().getToken();
         String gameIdentiier = String.valueOf(gameId);
         String playerName = getSharedPreferences(getString(R.string.gameData),Context.MODE_PRIVATE).getString(getString(R.string.username),"NULL");

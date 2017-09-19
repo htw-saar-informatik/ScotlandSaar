@@ -42,15 +42,17 @@ public class PushMessageHandlerService extends FirebaseMessagingService {
 
             if(m.get((getString(R.string.protocol_type))).equals(getString(R.string.LOBBY_PLAYER_JOIN))) {
                 String[] data = {m.get(getString(R.string.LOBBY_PLAYER_JOIN_PLAYER_NAME))};
-                forwardToLobby(getString(R.string.LOBBY_PLAYER_JOIN),   data);
+                forwardToLobby(getString(R.string.LOBBY_PLAYER_JOIN),data);
                 Log.i(TAG, "Player "+ m.get(getString(R.string.LOBBY_PLAYER_JOIN_PLAYER_NAME)) + " joined lobby.");
+
             } else if(m.get((getString(R.string.protocol_type))).equals(getString(R.string.LOBBY_PLAYER_MESSAGE))) {
                 String message = m.get(getString(R.string.PLAYER_MESSAGE));
                 String name = m.get(getString(R.string.PLAYER_NAME));
                 String stamp = m.get(getString(R.string.TIME_STAMP));
                 String[] data = {message,name,stamp};
-                forwardToLobby(getString(R.string.LOBBY_PLAYER_MESSAGE),   data);
-            }   else if(m.get((getString(R.string.protocol_type))).equals(getString(R.string.LOBBY_GAME_START))) {
+                forwardToLobby(getString(R.string.LOBBY_PLAYER_MESSAGE),data);
+
+            } else if(m.get((getString(R.string.protocol_type))).equals(getString(R.string.LOBBY_GAME_START))) {
                 forwardToLobby(getString(R.string.LOBBY_GAME_START),   null);
             }
 

@@ -119,8 +119,6 @@ public class LobbyActivity extends AppCompatActivity {
         LocalBroadcastManager.getInstance(this).registerReceiver(pushUpdateReceiver, new IntentFilter(getString(R.string.LOBBY_PLAYER_MESSAGE)));
         LocalBroadcastManager.getInstance(this).registerReceiver(pushUpdateReceiver, new IntentFilter(getString(R.string.LOBBY_GAME_START)));
 
-
-
     }
 
     private void startGame() {
