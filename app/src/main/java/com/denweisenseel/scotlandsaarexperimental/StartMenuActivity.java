@@ -17,15 +17,17 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.denweisenseel.scotlandsaarexperimental.api.RequestBuilder;
 import com.denweisenseel.scotlandsaarexperimental.data.VolleyRequestQueue;
+import com.denweisenseel.scotlandsaarexperimental.dialogFragments.GamenameInputFragment;
 import com.denweisenseel.scotlandsaarexperimental.dialogFragments.UsernameInputFragment;
 import com.google.firebase.iid.FirebaseInstanceId;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class StartMenuActivity extends AppCompatActivity {
+public class StartMenuActivity extends AppCompatActivity implements GamenameInputFragment.OnGamenameInputListener {
 
     private final String TAG = "StartMenu";
+    String gameName = "Null";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,7 +38,7 @@ public class StartMenuActivity extends AppCompatActivity {
         startGame.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startGame();
+                requestGameName();
             }
         });
         Button joinGame = (Button) findViewById(R.id.STARTMENU_JoinGame);
@@ -58,7 +60,7 @@ public class StartMenuActivity extends AppCompatActivity {
         } else {
             FragmentManager fm = getFragmentManager();
             UsernameInputFragment editNameDialogFragment = UsernameInputFragment.newInstance();
-            editNameDialogFragment.show(fm, "Dialog");
+            editNameDialogFragment.show(fm, "UsernameDialog");
         }
 
         if(sharedPref.contains(getString(R.string.gameId))) {
@@ -69,14 +71,25 @@ public class StartMenuActivity extends AppCompatActivity {
         super.onStart();
     }
 
+    /**
+     * Start Dialog for User to be able to input their Gamename
+     */
+    public void requestGameName() {
+        FragmentManager fm = getFragmentManager();
+        GamenameInputFragment editGamenameDialogFragment = GamenameInputFragment.newInstance();
+        editGamenameDialogFragment.show(fm, "GamenameDialog");
+    }
+
     private void startGame() {
 
         String firebaseToken = FirebaseInstanceId.getInstance().getToken();
-        String username = getSharedPreferences(getString(R.string.gameData),Context.MODE_PRIVATE).getString(getString(R.string.username),"NULL");
-        String gameName = "Game"; //TODO create gameName dialog for further customization (2 Hours)
+        String username = getSharedPreferences(getString(R.string.gameData),Context.MODE_PRIVATE).
+                getString(getString(R.string.username),"NULL");
+
         String[] requestARGS = {firebaseToken,username,gameName};
 
-        JsonObjectRequest gameRequest = new JsonObjectRequest(Request.Method.POST, RequestBuilder.buildRequestUrl(RequestBuilder.CREATE_GAME, requestARGS),null, new Response.Listener<JSONObject>() {
+        JsonObjectRequest gameRequest = new JsonObjectRequest(Request.Method.POST, RequestBuilder.
+                buildRequestUrl(RequestBuilder.CREATE_GAME, requestARGS),null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try {
@@ -115,5 +128,15 @@ public class StartMenuActivity extends AppCompatActivity {
         SharedPreferences.Editor editor = getSharedPreferences(getString(R.string.gameData),Context.MODE_PRIVATE).edit();
         editor.putLong(getString(R.string.gameId), gameId);
         editor.commit();
+    }
+
+    /**
+     * "Triggered" by requestGamename() and then starts game AFTER Gamename input
+     * @param string the entered text by the user for the gamename
+     */
+    @Override
+    public void onInput(String string) {
+        gameName = string;
+        startGame();
     }
 }
