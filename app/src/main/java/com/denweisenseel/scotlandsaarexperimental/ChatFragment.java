@@ -76,8 +76,10 @@ public class ChatFragment extends Fragment {
         cAdapater = new ChatMessageAdapter(getActivity(), chatList);
         chatList.add(new ChatDataParcelable("Test","Test","Test"));
 
-        ScrollView view = v.findViewById(R.id.scrollViewDebug);
+        final ScrollView view = v.findViewById(R.id.scrollViewDebug);
         view.setVerticalScrollBarEnabled(false);
+        view.scrollTo(0,900);
+
 
         cAdapater.notifyDataSetChanged();
         listView.setAdapter(cAdapater);

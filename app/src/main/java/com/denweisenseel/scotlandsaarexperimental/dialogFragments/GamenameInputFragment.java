@@ -1,11 +1,13 @@
 package com.denweisenseel.scotlandsaarexperimental.dialogFragments;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.DialogFragment;
 import android.app.FragmentManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -76,9 +78,12 @@ public class GamenameInputFragment extends DialogFragment {
         super.onViewCreated(view, savedInstanceState);
     }
 
+
+    @TargetApi(23)
     @Override
     public void onAttach(Context activity) {
         super.onAttach(activity);
+        Log.v(TAG, "Dennis");
 
         try
         {
@@ -88,10 +93,31 @@ public class GamenameInputFragment extends DialogFragment {
         {
             e.printStackTrace();
         }
-
-
-
     }
+
+
+    @SuppressWarnings("deprecation")
+    @Override
+    public final void onAttach(Activity activity) {
+        super.onAttach(activity);
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            onAttachToContext(activity);
+        }
+    }
+
+
+    protected void onAttachToContext(Context context) {
+        try
+        {
+            inputListener = (OnGamenameInputListener) context;
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+
 
     public interface OnGamenameInputListener
 
