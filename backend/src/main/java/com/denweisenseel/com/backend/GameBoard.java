@@ -24,7 +24,6 @@ public class GameBoard {
     @Id Long id;
 
     ArrayList<Player> playerList;
-    Random random;
 
     //Describing vars, for the GameList
     private String  gameName;
@@ -51,7 +50,7 @@ public class GameBoard {
 
     public GameBoard() {
         playerList = new ArrayList<Player>();
-        random = new Random("Dennis".hashCode());
+
     }
 
     public boolean createGame(String firebaseToken, String playerName, String gameName) {
@@ -97,7 +96,7 @@ public class GameBoard {
         //Setup game:
 
         //ASSIGN Mister X
-        int misterX = random.nextInt(playerList.size());
+        int misterX = new Random("Dennis".hashCode()).nextInt(playerList.size());
 
         misterXId = misterX;
         playerList.get(misterX).setIsMisterX(true);
@@ -303,7 +302,7 @@ public class GameBoard {
 
         int size = graph.size();
         Player misterX = playerList.get(misterXId);
-        int randomNumber = random.nextInt(size);
+        int randomNumber = new Random("Dennis".hashCode()).nextInt(size);
         misterX.setBoardPosition(graph.get(randomNumber).getId());
 
         for(Player p : playerList) {
@@ -316,7 +315,7 @@ public class GameBoard {
 
     private void assignPlayerRandomPosition(Player p,ArrayList<Node> g) {
         int misterXPositionId = playerList.get(misterXId).getBoardPosition();
-        int randomNodeId = random.nextInt(g.size());
+        int randomNodeId = new Random("Dennis".hashCode()).nextInt(g.size());
         if(g.get(randomNodeId).hasNeighbour(misterXPositionId) || hasPlayerOnPosition(randomNodeId)) {
             assignPlayerRandomPosition(p,g);
         } else {
