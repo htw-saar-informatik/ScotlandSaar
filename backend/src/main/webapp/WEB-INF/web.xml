@@ -8,11 +8,9 @@
         <filter-name>ObjectifyFilter</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
-	<listener>  
-    <listener-class>
-        com.denweisenseel.com.backend.StartupContextListener
-    </listener-class>
-</listener>  
+    <listener>
+        <listener-class>com.denweisenseel.com.backend.OfyHelper</listener-class>
+    </listener>
     <servlet>
         <servlet-name>SystemServiceServlet</servlet-name>
         <servlet-class>com.google.api.server.spi.SystemServiceServlet</servlet-class>

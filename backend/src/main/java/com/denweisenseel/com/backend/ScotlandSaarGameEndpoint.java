@@ -10,16 +10,10 @@ import com.denweisenseel.com.backend.beans.GameListBean;
 import com.denweisenseel.com.backend.beans.GameStateBean;
 import com.denweisenseel.com.backend.beans.ResponseBean;
 import com.denweisenseel.com.backend.data.Geolocation;
-import com.denweisenseel.com.backend.data.Player;
 import com.denweisenseel.com.backend.exceptions.PlayerNotFoundException;
 import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.ApiNamespace;
-import com.google.appengine.api.datastore.DatastoreService;
-import com.google.appengine.api.datastore.DatastoreServiceFactory;
-import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.datastore.FetchOptions;
-import com.google.appengine.api.datastore.Query;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +25,7 @@ import static com.googlecode.objectify.ObjectifyService.ofy;
 /**
  * An endpoint class we are exposing
  */
+
 @Api(
         name = "scotlandSaarAPI",
         version = "v1",
@@ -53,6 +48,7 @@ public class ScotlandSaarGameEndpoint {
 
     @ApiMethod(name = "createGame")
     public ResponseBean createGame(@Named("fireBaseToken") String fireBaseToken, @Named("playerName") String playerName, @Named("gameName") String gameName) {
+
         GameBoard gameBoard = new GameBoard();
         gameBoard.createGame(fireBaseToken,playerName,gameName);
         ofy().save().entity(gameBoard).now();

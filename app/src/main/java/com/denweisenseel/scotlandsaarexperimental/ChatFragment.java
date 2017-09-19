@@ -14,6 +14,7 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.AbsListView;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.android.volley.Request;
@@ -74,6 +75,9 @@ public class ChatFragment extends Fragment {
 
         cAdapater = new ChatMessageAdapter(getActivity(), chatList);
         chatList.add(new ChatDataParcelable("Test","Test","Test"));
+
+        ScrollView view = v.findViewById(R.id.scrollViewDebug);
+        view.setVerticalScrollBarEnabled(false);
 
         cAdapater.notifyDataSetChanged();
         listView.setAdapter(cAdapater);
