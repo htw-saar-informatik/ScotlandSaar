@@ -2,10 +2,13 @@ package com.denweisenseel.scotlandsaarexperimental;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -30,7 +33,9 @@ import com.google.firebase.iid.FirebaseInstanceId;
 
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 
 public class ChatFragment extends Fragment {
@@ -38,6 +43,8 @@ public class ChatFragment extends Fragment {
     private ChatFragmentInteractionListener mListener;
     private ChatMessageAdapter cAdapater;
     private final ArrayList<ChatDataParcelable> chatList =  new ArrayList();
+
+
 
     private BroadcastReceiver pushUpdateReceiver;
 
@@ -63,6 +70,8 @@ public class ChatFragment extends Fragment {
         if (getArguments() != null) {
 
         }
+
+
     }
 
     @Override
@@ -116,7 +125,6 @@ public class ChatFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_chat, container, false);
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
     public void saveChatMessage(ChatDataParcelable message) {
         if (mListener != null) {
             mListener.onFragmentInteraction(message);
@@ -140,6 +148,11 @@ public class ChatFragment extends Fragment {
         mListener = null;
     }
 
+    public void sendMessage(ChatDataParcelable chatMessage) {
+        chatList.add(chatMessage);
+        cAdapater.notifyDataSetChanged();
+    }
+
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
@@ -151,7 +164,6 @@ public class ChatFragment extends Fragment {
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface ChatFragmentInteractionListener {
-        // TODO: Update argument type and name
         void onFragmentInteraction(ChatDataParcelable chatDataParcelable);
     }
 

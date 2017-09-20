@@ -1,8 +1,10 @@
 package com.denweisenseel.scotlandsaarexperimental.services;
 
+import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
@@ -20,7 +22,6 @@ public class PushMessageHandlerService extends FirebaseMessagingService {
 
 
     private final String TAG = "PUSH MESSAGE";
-
 
 
 
@@ -51,6 +52,7 @@ public class PushMessageHandlerService extends FirebaseMessagingService {
                 String stamp = m.get(getString(R.string.TIME_STAMP));
                 String[] data = {message,name,stamp};
                 forwardToLobby(getString(R.string.LOBBY_PLAYER_MESSAGE),data);
+                //notifyUser(name, message);
 
             } else if(m.get((getString(R.string.protocol_type))).equals(getString(R.string.LOBBY_GAME_START))) {
                 forwardToLobby(getString(R.string.LOBBY_GAME_START),   null);
@@ -70,6 +72,17 @@ public class PushMessageHandlerService extends FirebaseMessagingService {
 
         // Also if you intend on generating your own notifications as a result of a received FCM
         // message, here is where that should be initiated. See sendNotification method below.
+    }
+
+    private void notifyUser(String name, String message) {
+        NotificationCompat.Builder mBuilder =
+                new NotificationCompat.Builder(this)
+                        .setSmallIcon(R.drawable.ic_notifications_black_24dp)
+                        .setContentTitle(name)
+                        .setContentText(message);
+        NotificationManager mNotifyMgr =
+                (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        mNotifyMgr.notify(001, mBuilder.build());
     }
 
     private void forwardToLobby(String type, String[] data) {

@@ -10,8 +10,6 @@
     android:focusable="true"
     android:focusableInTouchMode="true">
 
-    <!-- TODO: Update blank fragment layout -->
-
     <ListView
         android:id="@+id/Lobby_ChatList"
         android:layout_width="match_parent"
