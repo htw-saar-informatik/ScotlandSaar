@@ -115,8 +115,9 @@ public class GameListActivity extends AppCompatActivity {
                     gameList.clear();
                     for(int i = 0; i <games.length();i++) {
                         String gameName = games.getJSONObject(i).getString(getString(R.string.GAME_LIST_ITEM_GAMENAME));
-                        long gameId   = Long.valueOf(games.getJSONObject(i).getString(getString(R.string.GAME_LIST_ITEM_GAMEID)));
-                        GameListInfoParcelable gameListItem = new GameListInfoParcelable(gameName,0,0,gameId); //TODO Implement MaxPlayerSize if applicable, playerCount (1 hour)
+                        long gameId     = Long.valueOf(games.getJSONObject(i).getString(getString(R.string.GAME_LIST_ITEM_GAMEID)));
+                        int playerCount = Integer.valueOf(games.getJSONObject(i).getString(getString(R.string.GAME_LIST_ITEM_PLAYERCOUNT)));
+                        GameListInfoParcelable gameListItem = new GameListInfoParcelable(gameName,playerCount,0,gameId); //TODO Implement MaxPlayerSize if applicable, playerCount (1 hour)
                         gameList.add(gameListItem);
                     }
                     gameListAdapter.notifyDataSetChanged();

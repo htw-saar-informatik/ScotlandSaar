@@ -27,7 +27,7 @@ import org.json.JSONObject;
 public class StartMenuActivity extends AppCompatActivity implements GamenameInputFragment.OnGamenameInputListener {
 
     private final String TAG = "StartMenu";
-    String gameName = "Null";
+    private String gameName = "Null";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

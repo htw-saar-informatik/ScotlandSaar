@@ -57,12 +57,15 @@ public class GameListModelAdapter extends BaseAdapter {
 
         }
 
-        TextView name = convertView.findViewById(R.id.game_list_item_gameName);
-        TextView message = convertView.findViewById(R.id.game_list_item_playerCount);
+        TextView gameName = convertView.findViewById(R.id.game_list_item_gameName);
+        TextView hostName = convertView.findViewById(R.id.game_list_item_hostName);
+        TextView playerCount = convertView.findViewById(R.id.game_list_item_playerCount);
 
-        name.setText(gameListInfoParcelables.get(i).getName());
-        message.setText(String.valueOf(gameListInfoParcelables.get(i).getPlayerCount()));
-        Log.v("GameListItem", name.getText().toString());
+
+        gameName.setText(gameListInfoParcelables.get(i).getName());
+        hostName.setText(gameListInfoParcelables.get(i).getName());
+        playerCount.setText(String.valueOf(gameListInfoParcelables.get(i).getPlayerCount()));
+        Log.v("GameListItem", gameName.getText().toString());
         return convertView;
     }
 

@@ -39,5 +39,8 @@ public class GameListBean {
         this.playerCount = playerCount;
     }
 
+    public int getPlayerCount(){
+        return playerCount;
+    }
 
 }
