@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -51,8 +52,8 @@ public class ChatFragment extends Fragment {
 
     public static ChatFragment newInstance(String param1, String param2) {
         ChatFragment fragment = new ChatFragment();
-        Bundle args = new Bundle();
-        fragment.setArguments(args);
+        //Bundle args = new Bundle();
+        //fragment.setArguments(args);
         return fragment;
     }
 
@@ -65,20 +66,15 @@ public class ChatFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
+    public void onViewCreated(View v, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(v, savedInstanceState);
 
 
-        View v = inflater.inflate(R.layout.fragment_chat, container, false);
         ListView listView = v.findViewById(R.id.chat_fragment_listview);
 
         cAdapater = new ChatMessageAdapter(getActivity(), chatList);
         chatList.add(new ChatDataParcelable("Test","Test","Test"));
 
-        final ScrollView view = v.findViewById(R.id.scrollViewDebug);
-        view.setVerticalScrollBarEnabled(false);
-        view.scrollTo(0,900);
 
 
         cAdapater.notifyDataSetChanged();
@@ -89,6 +85,7 @@ public class ChatFragment extends Fragment {
 
 
         final EditText chatMessageInput = v.findViewById(R.id.chat_fragment_chatMessage);
+        Log.i("TEST", "Test");
 
         chatMessageInput.setOnEditorActionListener(new EditText.OnEditorActionListener() {
             @Override
@@ -108,6 +105,13 @@ public class ChatFragment extends Fragment {
         });
 
 
+
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
 
         return inflater.inflate(R.layout.fragment_chat, container, false);
     }

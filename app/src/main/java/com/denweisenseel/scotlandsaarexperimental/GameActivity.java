@@ -16,6 +16,8 @@ import com.denweisenseel.scotlandsaarexperimental.data.ChatDataParcelable;
 public class GameActivity extends AppCompatActivity implements ChatFragment.ChatFragmentInteractionListener {
 
     BottomBarAdapter adapter;
+    CustomViewPager pager;
+    ChatFragment chatFragment;
 
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
@@ -38,21 +40,26 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
 
-        CustomViewPager pager = (CustomViewPager) findViewById(R.id.viewpager);
+        pager = (CustomViewPager) findViewById(R.id.viewpager);
         pager.setPagingEnabled(false);
 
         BottomBarAdapter bottomBarAdapter = new BottomBarAdapter(getSupportFragmentManager());
-        ChatFragment fragment = ChatFragment.newInstance("null","null");
-
-        bottomBarAdapter.addFragments(fragment);
+        chatFragment = ChatFragment.newInstance("null","null");
+        bottomBarAdapter.addFragments(chatFragment);
 
         pager.setAdapter(bottomBarAdapter);
 
+        pager.setCurrentItem(0);
+
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
+
+
+        //TODO Beim Back Button drücken soll ein Quit Game Dialog angezeigt werden.
 
     }
 

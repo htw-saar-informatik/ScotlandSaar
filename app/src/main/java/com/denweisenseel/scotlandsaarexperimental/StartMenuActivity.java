@@ -99,7 +99,7 @@ public class StartMenuActivity extends AppCompatActivity implements GamenameInpu
                     Intent i = new Intent(StartMenuActivity.this, GameActivity.class);
                     i.putExtra(getString(R.string.host), true);
                     startActivity(i);
-
+                    finish();
 
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -120,6 +120,7 @@ public class StartMenuActivity extends AppCompatActivity implements GamenameInpu
     private void joinGame() {
         Intent i = new Intent(StartMenuActivity.this, GameListActivity.class);
         startActivity(i);
+        finish();
     }
 
 
