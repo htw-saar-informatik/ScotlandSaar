@@ -9,12 +9,14 @@ import android.os.Parcelable;
 
 public class GameListInfoParcelable implements Parcelable {
 
+    private String hostName;
     private String creatorName;
     private int playerCount;
     private int maxPlayerSize;
     private long gameId;
 
-    public GameListInfoParcelable(String creatorName, int playerCount, int maxPlayerSize, long gameId) {
+    public GameListInfoParcelable(String hostName, String creatorName, int playerCount, int maxPlayerSize, long gameId) {
+        this.hostName = hostName;
         this.creatorName = creatorName;
         this.playerCount = playerCount;
         this.maxPlayerSize = maxPlayerSize;
@@ -22,6 +24,7 @@ public class GameListInfoParcelable implements Parcelable {
     }
 
     protected GameListInfoParcelable(Parcel in) {
+        this.hostName = in.readString();
         this.creatorName = in.readString();
         this.playerCount = in.readInt();
         this.maxPlayerSize = in.readInt();
@@ -30,6 +33,7 @@ public class GameListInfoParcelable implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(hostName);
         dest.writeString(creatorName);
         dest.writeInt(playerCount);
         dest.writeInt(maxPlayerSize);
@@ -68,4 +72,6 @@ public class GameListInfoParcelable implements Parcelable {
     public long getGameId() {
         return gameId;
     }
+
+    public String getHostName() {return hostName;}
 }
