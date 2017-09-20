@@ -63,9 +63,9 @@ public class GameListModelAdapter extends BaseAdapter {
 
 
         gameName.setText(gameListInfoParcelables.get(i).getName());
-        hostName.setText(gameListInfoParcelables.get(i).getName());
+        hostName.setText(gameListInfoParcelables.get(i).getHostName());
         playerCount.setText(String.valueOf(gameListInfoParcelables.get(i).getPlayerCount()));
-        Log.v("GameListItem", gameName.getText().toString());
+        Log.v("GameListItem", hostName.getText().toString());
         return convertView;
     }
 

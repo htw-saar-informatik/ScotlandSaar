@@ -114,10 +114,11 @@ public class GameListActivity extends AppCompatActivity {
                     JSONArray games = response.getJSONArray("items");
                     gameList.clear();
                     for(int i = 0; i <games.length();i++) {
+                        String hostName = games.getJSONObject(i).getString(getString(R.string.host));
                         String gameName = games.getJSONObject(i).getString(getString(R.string.GAME_LIST_ITEM_GAMENAME));
                         long gameId     = Long.valueOf(games.getJSONObject(i).getString(getString(R.string.GAME_LIST_ITEM_GAMEID)));
                         int playerCount = Integer.valueOf(games.getJSONObject(i).getString(getString(R.string.GAME_LIST_ITEM_PLAYERCOUNT)));
-                        GameListInfoParcelable gameListItem = new GameListInfoParcelable(gameName,playerCount,0,gameId); //TODO Implement MaxPlayerSize if applicable, playerCount (1 hour)
+                        GameListInfoParcelable gameListItem = new GameListInfoParcelable(hostName,gameName,playerCount,0,gameId); //TODO Implement MaxPlayerSize if applicable, playerCount (1 hour)
                         gameList.add(gameListItem);
                     }
                     gameListAdapter.notifyDataSetChanged();
