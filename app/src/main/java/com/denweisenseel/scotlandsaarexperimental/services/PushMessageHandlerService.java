@@ -55,7 +55,11 @@ public class PushMessageHandlerService extends FirebaseMessagingService {
                 //notifyUser(name, message);
 
             } else if(m.get((getString(R.string.protocol_type))).equals(getString(R.string.LOBBY_GAME_START))) {
-                forwardToLobby(getString(R.string.LOBBY_GAME_START),   null);
+                String args = remoteMessage.getData().toString();
+                Log.i("TEST", args);
+                forwardToMap(getString(R.string.LOBBY_GAME_START),  args);
+            } else if(m.get((getString(R.string.protocol_type))).equals(getString(R.string.GAME_TURN_START_X))) {
+
             }
 
 
@@ -72,6 +76,15 @@ public class PushMessageHandlerService extends FirebaseMessagingService {
 
         // Also if you intend on generating your own notifications as a result of a received FCM
         // message, here is where that should be initiated. See sendNotification method below.
+    }
+
+    private void forwardToMap(String string, String args) {
+
+        Intent i = new Intent(string);
+
+        i.putExtra(getString(R.string.BROADCAST_DATA),args);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(i);
+
     }
 
     private void notifyUser(String name, String message) {
