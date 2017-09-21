@@ -20,7 +20,7 @@
             android:paddingLeft="0dp"
             android:paddingRight="0dp"
             android:paddingTop="0dp"
-            android:text="Please enter your username!"
+            android:text="@string/username_input_request"
             android:textSize="15sp" />
 
         <EditText

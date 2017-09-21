@@ -21,7 +21,7 @@
         android:layout_height="wrap_content"
         android:ems="10"
         android:inputType="textPersonName"
-        android:hint="Enter Message.."
+        android:hint="@string/hint_chat_message"
         android:layout_gravity="center"
         />
 </LinearLayout>
