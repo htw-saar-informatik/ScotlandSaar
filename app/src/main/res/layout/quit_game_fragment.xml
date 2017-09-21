@@ -11,17 +11,18 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:padding="50dp">
+        android:padding="50dp"
+        android:layout_weight="1">
 
         <TextView
-            android:id="@+id/usernameInput_label_info"
+            android:id="@+id/quitGameDialog_label_info"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingLeft="0dp"
             android:paddingRight="0dp"
             android:paddingTop="0dp"
             android:text="Are you sure you want to quit?"
-            android:textSize="17sp" />
+            android:textSize="30sp" />
 
     </LinearLayout>
 
@@ -29,11 +30,16 @@
         android:id="@+id/yesButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:elevation="10dp"
-        android:text="Yes" />
+        android:text="Yes"
+        android:textSize="25sp"
+        android:layout_weight="1" />
 
     <Button
         android:id="@+id/noButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="No" />
+        android:text="No"
+        android:textSize="25sp"
+        android:layout_weight="1" />
+
+</LinearLayout>

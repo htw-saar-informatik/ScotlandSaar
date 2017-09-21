@@ -14,7 +14,7 @@
         android:padding="50dp">
 
         <TextView
-            android:id="@+id/usernameInput_label_info"
+            android:id="@+id/gamenameInput_label_info"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingLeft="0dp"
