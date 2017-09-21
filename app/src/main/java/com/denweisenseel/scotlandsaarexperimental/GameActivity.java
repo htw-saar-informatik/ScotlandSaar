@@ -67,6 +67,7 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
 
 
     private String TAG = "GameActivity";
+    private GoogleMap map;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -198,6 +199,8 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
     public void onMapReady(final GoogleMap googleMap) {
         //TODO Setup map constraints - Those var values should be finals somewhere! Please redo (5 min)
 
+        map = googleMap;
+
         LatLngBounds bounds = new LatLngBounds( new LatLng(49.234012, 6.995120),new LatLng(49.237760, 7.006214));
         googleMap.setLatLngBoundsForCameraTarget(bounds);
 
@@ -226,6 +229,14 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
                 }
             }
         });
+
+        initMap(googleMap);
+    }
+
+    private void initMap(GoogleMap googleMap) {
+
+
+
     }
 
     @Override
@@ -256,38 +267,39 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
     }
 
     private void populateMap(String input) {
-        Log.i(TAG,"TesTtetewt");
-        Log.i(TAG,input);
+        ArrayList<Player> playerList = new ArrayList<>();
 
         JSONObject json = null;
         try {
-
             json = new JSONObject(input);
-
-            Log.i(TAG + "TEST1", json.toString());
             JSONObject gameState = json.getJSONObject("gameState");
             JSONArray playerArray = gameState.getJSONArray("playerList");
 
-            ArrayList<Player> playerList = new ArrayList<>();
 
-            Log.i(TAG + "TEST112", playerArray.toString());
             for(int i = 0; i < playerArray.length(); i++) {
                 JSONObject player = playerArray.getJSONObject(i);
                 Player p = new Player();
                 p.setName(player.getString("name"));
                 p.setBoardPosition(player.getInt("boardPosition"));
-                Log.v("TESTopo", player.getString("name"));
+                playerList.add(p);
             }
 
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
+        gameModel.setPlayerList(playerList);
+
         Log.i(TAG + "TEST", json.toString());
 
+        placePlayersOnMap();
 
 
 
 
+
+    }
+
+    private void placePlayersOnMap() {
     }
 }
