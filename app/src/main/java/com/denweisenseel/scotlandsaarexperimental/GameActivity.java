@@ -55,10 +55,11 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
     private BroadcastReceiver chatMessageReceiver;
     private ArrayList<ChatDataParcelable> chatList;
 
+
     int unreadNotficationCounter = 0;
 
     private SupportMapFragment mapFragment;
-
+    private BroadcastReceiver gameStateReceiver;
     private  DashboardFragment dashboardFragment;
 
     GameModel gameModel = new GameModel();
@@ -130,7 +131,7 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
 
         navigation.disableItemAtPosition(0);
 
-
+//TODO move this to own method!
         chatList = new ArrayList<ChatDataParcelable>();
         chatMessageReceiver = new BroadcastReceiver() {
             @Override
@@ -166,6 +167,18 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
         LocalBroadcastManager.getInstance(this).registerReceiver(chatMessageReceiver, new IntentFilter(getString(R.string.LOBBY_PLAYER_JOIN)));
         LocalBroadcastManager.getInstance(this).registerReceiver(chatMessageReceiver, new IntentFilter(getString(R.string.LOBBY_PLAYER_MESSAGE)));
         LocalBroadcastManager.getInstance(this).registerReceiver(chatMessageReceiver, new IntentFilter(getString(R.string.LOBBY_GAME_START)));
+        ////UP TO HERE
+
+        gameStateReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if(intent.getAction().equals(getString(R.string.LOBBY_GAME_START))) {
+
+                    navigation.enableItemAtPosition(0);
+                }
+            }
+        };
+
 
     }
 

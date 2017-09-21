@@ -56,6 +56,8 @@ public class PushMessageHandlerService extends FirebaseMessagingService {
 
             } else if(m.get((getString(R.string.protocol_type))).equals(getString(R.string.LOBBY_GAME_START))) {
                 forwardToLobby(getString(R.string.LOBBY_GAME_START),   null);
+            } else if(m.get((getString(R.string.protocol_type))).equals(getString(R.string.GAME_TURN_START_X))) {
+
             }
 
 
