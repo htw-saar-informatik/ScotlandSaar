@@ -269,11 +269,6 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
         VolleyRequestQueue.getInstance(this).addToRequestQueue(gameRequest);
     }
 
-    @Override
-    public void onBackPressed() {
-        requestQuitGameDialog();
-    }
-
     private void populateMap(String input) {
         Log.i(TAG,"TesTtetewt");
         Log.i(TAG,input);

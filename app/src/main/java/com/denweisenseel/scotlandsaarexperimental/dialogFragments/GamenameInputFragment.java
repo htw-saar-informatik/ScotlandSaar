@@ -39,7 +39,7 @@ public class GamenameInputFragment extends DialogFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setCancelable(false);
+        //setCancelable(false);
     }
 
     @Override
