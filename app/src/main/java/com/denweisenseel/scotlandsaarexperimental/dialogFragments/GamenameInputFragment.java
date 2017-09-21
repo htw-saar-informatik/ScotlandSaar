@@ -119,9 +119,7 @@ public class GamenameInputFragment extends DialogFragment {
 
 
 
-    public interface OnGamenameInputListener
-
-    {
+    public interface OnGamenameInputListener {
         void onInput(String string);
     }
 

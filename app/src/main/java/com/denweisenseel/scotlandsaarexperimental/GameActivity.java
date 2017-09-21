@@ -1,5 +1,6 @@
 package com.denweisenseel.scotlandsaarexperimental;
 
+import android.app.FragmentManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -16,12 +17,14 @@ import com.denweisenseel.scotlandsaarexperimental.adapter.BottomBarAdapter;
 import com.denweisenseel.scotlandsaarexperimental.customView.CustomViewPager;
 import com.denweisenseel.scotlandsaarexperimental.data.ChatDataParcelable;
 import com.denweisenseel.scotlandsaarexperimental.data.GameModelParcelable;
+import com.denweisenseel.scotlandsaarexperimental.data.Player;
+import com.denweisenseel.scotlandsaarexperimental.dialogFragments.QuitGameFragment;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class GameActivity extends AppCompatActivity implements ChatFragment.ChatFragmentInteractionListener {
+public class GameActivity extends AppCompatActivity implements ChatFragment.ChatFragmentInteractionListener, QuitGameFragment.OnFragmentInteractionListener{
 
     BottomBarAdapter adapter;
     CustomViewPager pager;
@@ -97,10 +100,19 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
             }
         };
 
+        //Player wants to quit the game
+        requestQuitGameDialog();
+
         LocalBroadcastManager.getInstance(this).registerReceiver(chatMessageReceiver, new IntentFilter(getString(R.string.LOBBY_PLAYER_JOIN)));
         LocalBroadcastManager.getInstance(this).registerReceiver(chatMessageReceiver, new IntentFilter(getString(R.string.LOBBY_PLAYER_MESSAGE)));
         LocalBroadcastManager.getInstance(this).registerReceiver(chatMessageReceiver, new IntentFilter(getString(R.string.LOBBY_GAME_START)));
 
+    }
+
+    public void requestQuitGameDialog() {
+        FragmentManager fm = getFragmentManager();
+        QuitGameFragment editGamenameDialogFragment = QuitGameFragment.newInstance();
+        editGamenameDialogFragment.show(fm, "QuitGameDialog");
     }
 
     private void sendToChatFragment(ChatDataParcelable chatMessage) {
@@ -113,5 +125,9 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
     }
 
 
-
+    @Override
+    public void onYesButtonClicked() {
+        //TODO Actually kick the player out of the game.
+        finish();
+    }
 }

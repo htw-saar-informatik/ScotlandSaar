@@ -113,6 +113,6 @@ public class QuitGameFragment extends DialogFragment {
      * activity.
      **/
     public interface OnFragmentInteractionListener {
-        boolean onYesButtonClicked();
+        void onYesButtonClicked();
     }
 }
