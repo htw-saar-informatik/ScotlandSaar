@@ -53,7 +53,6 @@ public class DashboardFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_dashboard, container, false);
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
     public void onStartGameButtonPressed() {
         Log.v("TEST","Pressed");
         if (mListener != null) {
@@ -79,7 +78,6 @@ public class DashboardFragment extends Fragment {
     }
 
     public interface DashboardInteractionListener {
-        // TODO: Update argument type and name
         void onStartGame();
     }
 }

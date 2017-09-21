@@ -100,7 +100,6 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
 
 
         final AHBottomNavigation navigation = (AHBottomNavigation) findViewById(R.id.navigation);
-        //TODO Beim Back Button drücken soll ein Quit Game Dialog angezeigt werden. (2 Hours)
 
         AHBottomNavigationItem item1 = new AHBottomNavigationItem(R.string.game_map, R.drawable.ic_home_black_24dp, R.color.color_tab_1);
         AHBottomNavigationItem item2 = new AHBottomNavigationItem(R.string.game_chat, R.drawable.ic_notifications_black_24dp, R.color.color_tab_1);
