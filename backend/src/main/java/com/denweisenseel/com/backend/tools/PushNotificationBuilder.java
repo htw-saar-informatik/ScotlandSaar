@@ -49,6 +49,8 @@ public class PushNotificationBuilder {
         public static final String PLAYER_NAME = "playerName";
         public static final String PLAYER_MESSAGE = "playerMessage";
         public static final String TIME_STAMP = "timeStamp";
+        public static final String GAME_STATE = "gameState";
+        public static final String ARE_YOU_MISTER_X = "isMisterX";
     }
 
 

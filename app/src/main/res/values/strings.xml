@@ -44,6 +44,7 @@
     <string name="title_activity_maps">Map</string>
     <string name="username_input_request">Please enter your username!</string>
     <string name="StartGame">Start Game</string>
+    <string name="isMisterX">isMisterX</string>
 
 
 </resources>

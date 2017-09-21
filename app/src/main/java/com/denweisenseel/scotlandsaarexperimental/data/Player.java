@@ -7,4 +7,14 @@ package com.denweisenseel.scotlandsaarexperimental.data;
 public class Player {
 
 
+    private int boardPosition;
+    private String name;
+
+    public void setBoardPosition(int boardPosition) {
+        this.boardPosition = boardPosition;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 }

@@ -27,6 +27,7 @@ import com.denweisenseel.scotlandsaarexperimental.customView.CustomViewPager;
 import com.denweisenseel.scotlandsaarexperimental.data.ChatDataParcelable;
 import com.denweisenseel.scotlandsaarexperimental.data.GameListInfoParcelable;
 import com.denweisenseel.scotlandsaarexperimental.data.GameModelParcelable;
+import com.denweisenseel.scotlandsaarexperimental.data.Player;
 import com.denweisenseel.scotlandsaarexperimental.data.VolleyRequestQueue;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -158,26 +159,27 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
                                 .build();
                         navigation.setNotification(notification, 1);
                     }
-                } else if(intent.getAction().equals(getString(R.string.LOBBY_GAME_START))) {
-                    Log.v(TAG, "Game Start!");
                 }
             }
         };
 
         LocalBroadcastManager.getInstance(this).registerReceiver(chatMessageReceiver, new IntentFilter(getString(R.string.LOBBY_PLAYER_JOIN)));
         LocalBroadcastManager.getInstance(this).registerReceiver(chatMessageReceiver, new IntentFilter(getString(R.string.LOBBY_PLAYER_MESSAGE)));
-        LocalBroadcastManager.getInstance(this).registerReceiver(chatMessageReceiver, new IntentFilter(getString(R.string.LOBBY_GAME_START)));
         ////UP TO HERE
 
         gameStateReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 if(intent.getAction().equals(getString(R.string.LOBBY_GAME_START))) {
-
+                    String args = intent.getStringExtra(getString(R.string.BROADCAST_DATA));
+                    populateMap(args);
                     navigation.enableItemAtPosition(0);
                 }
             }
         };
+
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(gameStateReceiver, new IntentFilter(getString(R.string.LOBBY_GAME_START)));
 
 
     }
@@ -228,6 +230,7 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
 
     @Override
     public void onStartGame() {
+        Log.v(TAG, "Starting game!");
 
         String gameId = String.valueOf(getSharedPreferences(getString(R.string.gameData), MODE_PRIVATE).getLong(getString(R.string.gameId),0));
         String firebaseToken = FirebaseInstanceId.getInstance().getToken();
@@ -250,5 +253,41 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
     });
 
         VolleyRequestQueue.getInstance(this).addToRequestQueue(gameRequest);
+    }
+
+    private void populateMap(String input) {
+        Log.i(TAG,"TesTtetewt");
+        Log.i(TAG,input);
+
+        JSONObject json = null;
+        try {
+
+            json = new JSONObject(input);
+
+            Log.i(TAG + "TEST1", json.toString());
+            JSONObject gameState = json.getJSONObject("gameState");
+            JSONArray playerArray = gameState.getJSONArray("playerList");
+
+            ArrayList<Player> playerList = new ArrayList<>();
+
+            Log.i(TAG + "TEST112", playerArray.toString());
+            for(int i = 0; i < playerArray.length(); i++) {
+                JSONObject player = playerArray.getJSONObject(i);
+                Player p = new Player();
+                p.setName(player.getString("name"));
+                p.setBoardPosition(player.getInt("boardPosition"));
+                Log.v("TESTopo", player.getString("name"));
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        Log.i(TAG + "TEST", json.toString());
+
+
+
+
+
     }
 }

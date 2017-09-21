@@ -7,8 +7,11 @@ import com.denweisenseel.com.backend.data.Player;
 import com.denweisenseel.com.backend.exceptions.PlayerNotFoundException;
 import com.denweisenseel.com.backend.tools.GraphBuilder;
 import com.denweisenseel.com.backend.tools.PushNotificationBuilder;
+import com.google.gson.Gson;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
+
+import org.json.simple.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -352,6 +355,8 @@ public class GameBoard {
             new PushNotificationBuilder()
                     .addRecipient(q.getFirebaseToken())
                     .setNotificationType(PushNotificationBuilder.PushNotificationType.LOBBY_GAME_START)
+                    .addDataAttribute(PushNotificationBuilder.DataType.GAME_STATE, getGameStateAsJson(q.isMisterX()))
+                    .addDataAttribute(PushNotificationBuilder.DataType.ARE_YOU_MISTER_X, q.isMisterX())
                     .push();
 
         }
@@ -417,6 +422,13 @@ public class GameBoard {
         gsb.setTurnState(turnState);
 
         return gsb;
+    }
+
+    public String getGameStateAsJson(boolean misterX) {
+
+        String object = new Gson().toJson(getGameState(misterX));
+        return object;
+
     }
 
     public byte getGameState() {
