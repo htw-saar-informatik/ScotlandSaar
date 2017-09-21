@@ -166,9 +166,6 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
             }
         };
 
-        //Player wants to quit the game
-        requestQuitGameDialog();
-
         LocalBroadcastManager.getInstance(this).registerReceiver(chatMessageReceiver, new IntentFilter(getString(R.string.LOBBY_PLAYER_JOIN)));
         LocalBroadcastManager.getInstance(this).registerReceiver(chatMessageReceiver, new IntentFilter(getString(R.string.LOBBY_PLAYER_MESSAGE)));
         ////UP TO HERE
@@ -211,6 +208,7 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
         //TODO Actually kick the player out of the game.
         finish();
     }
+
     public void onMapReady(final GoogleMap googleMap) {
         //TODO Setup map constraints - Those var values should be finals somewhere! Please redo (5 min)
 
@@ -273,8 +271,7 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
 
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
-
+        requestQuitGameDialog();
     }
 
     private void populateMap(String input) {
