@@ -1,6 +1,7 @@
 package com.denweisenseel.com.backend.data;
 
 import com.denweisenseel.com.backend.data.Geolocation;
+import com.denweisenseel.com.backend.tools.GraphBuilder;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
 
@@ -18,6 +19,7 @@ public class Player {
     private int boardPosition = -1;
     private int targetPosition = -1;
     private Geolocation geolocation = new Geolocation();
+    private int id;
 
     private PlayerState playerState = PlayerState.IS_DONE;
 
@@ -66,7 +68,12 @@ public class Player {
     }
 
     public void setBoardPosition(int boardPosition) {
+
         this.boardPosition = boardPosition;
+        Node n = GraphBuilder.getGraph().get(boardPosition);
+        setGeolocation(new Geolocation(n.getLatitude(),n.getLongitude()));
+        //TODO make this better @Luca
+
     }
 
     public void setIsMisterX(boolean isMisterX) {
@@ -91,6 +98,14 @@ public class Player {
 
     public void setLocation(Geolocation location) {
         this.geolocation = location;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getId() {
+        return id;
     }
 
     public enum PlayerState {

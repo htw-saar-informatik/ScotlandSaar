@@ -7,6 +7,7 @@ public class ResponseBean {
 
     private boolean success;
     private long gameId;
+    private int playerId;
 
 
     public boolean isSuccess() {
@@ -23,5 +24,13 @@ public class ResponseBean {
 
     public void setGameId(long gameId) {
         this.gameId = gameId;
+    }
+
+    public void setPlayerId(int playerId) {
+        this.playerId = playerId;
+    }
+
+    public int getPlayerId() {
+        return playerId;
     }
 }

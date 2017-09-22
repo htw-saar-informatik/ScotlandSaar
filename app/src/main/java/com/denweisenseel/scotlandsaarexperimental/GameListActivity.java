@@ -80,7 +80,8 @@ public class GameListActivity extends AppCompatActivity {
                     if(response.has(getString(R.string.protocol_success))) {
                         if(response.getBoolean(getString(R.string.protocol_success))) {
                             Intent i = new Intent(GameListActivity.this, LobbyActivity.class);
-
+                            int id = response.getInt(getString(R.string.playerId));
+                            savePlayerId(id);
                             SharedPreferences.Editor editor = getSharedPreferences(getString(R.string.gameData),Context.MODE_PRIVATE).edit();
                             editor.putLong(getString(R.string.gameId), Long.valueOf(gameId));
                             editor.commit();
@@ -104,6 +105,12 @@ public class GameListActivity extends AppCompatActivity {
         VolleyRequestQueue.getInstance(this).addToRequestQueue(gameRequest);
     }
 
+
+    private void savePlayerId(int id) {
+        SharedPreferences.Editor editor = getSharedPreferences(getString(R.string.gameData),Context.MODE_PRIVATE).edit();
+        editor.putInt(getString(R.string.playerId), id);
+        editor.commit();
+    }
 
     private void fetchGameList() {
         String noArgs[] = {}; //TODO Refactor this! its silly to pass a empty string array (1 hour)

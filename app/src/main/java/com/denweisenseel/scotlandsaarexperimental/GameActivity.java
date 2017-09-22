@@ -275,6 +275,11 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
         VolleyRequestQueue.getInstance(this).addToRequestQueue(gameRequest);
     }
 
+    @Override
+    public void onMakeMove() {
+        makeMove(10);
+    }
+
     private void populateMap(String input) {
 
         JSONObject json = null;
@@ -301,10 +306,6 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
         Log.i(TAG + "TEST", json.toString());
 
         placePlayersOnMap();
-
-
-
-
 
     }
 
@@ -339,6 +340,28 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
                 }
             }
         });
+    }
 
+    private boolean makeMove(int targetPosition) {
+        String firebaseToken = FirebaseInstanceId.getInstance().getToken();
+        String gameId = String.valueOf(getSharedPreferences(getString(R.string.gameData), MODE_PRIVATE).getLong(getString(R.string.gameId),0));
+
+        String[] requestARGS = new String[] {gameId,firebaseToken,String.valueOf(targetPosition)};
+
+        JsonObjectRequest gameRequest = new JsonObjectRequest(Request.Method.POST, RequestBuilder.
+                buildRequestUrl(RequestBuilder.MAKE_MOVE, requestARGS),null, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                Log.v(TAG, "Made move");
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e(TAG, error.toString());
+            }
+        });
+
+        VolleyRequestQueue.getInstance(this).addToRequestQueue(gameRequest);
+        return true;
     }
 }

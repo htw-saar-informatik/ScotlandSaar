@@ -94,7 +94,9 @@ public class StartMenuActivity extends AppCompatActivity implements GamenameInpu
             public void onResponse(JSONObject response) {
                 try {
                     long gameId = response.getLong(getString(R.string.protocol_gameId));
+                    int id = response.getInt(getString(R.string.playerId));
                     saveGameId(gameId);
+                    savePlayerId(id);
                     Log.i(TAG, "Game created! ID: "+gameId);
                     Intent i = new Intent(StartMenuActivity.this, GameActivity.class);
                     i.putExtra(getString(R.string.host), true);
@@ -114,6 +116,12 @@ public class StartMenuActivity extends AppCompatActivity implements GamenameInpu
 
         VolleyRequestQueue.getInstance(this).addToRequestQueue(gameRequest);
 
+    }
+
+    private void savePlayerId(int id) {
+        SharedPreferences.Editor editor = getSharedPreferences(getString(R.string.gameData),Context.MODE_PRIVATE).edit();
+        editor.putInt(getString(R.string.playerId), id);
+        editor.commit();
     }
 
 

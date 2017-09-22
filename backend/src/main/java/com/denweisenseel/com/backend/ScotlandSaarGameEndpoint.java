@@ -50,12 +50,13 @@ public class ScotlandSaarGameEndpoint {
     public ResponseBean createGame(@Named("fireBaseToken") String fireBaseToken, @Named("playerName") String playerName, @Named("gameName") String gameName) {
 
         GameBoard gameBoard = new GameBoard();
-        gameBoard.createGame(fireBaseToken,playerName,gameName);
+        int i = gameBoard.createGame(fireBaseToken,playerName,gameName);
         ofy().save().entity(gameBoard).now();
 
         ResponseBean response = new ResponseBean();
         response.setSuccess(true);
         response.setGameId(gameBoard.id);
+        response.setPlayerId(i);
         return response;
     }
 
@@ -63,13 +64,14 @@ public class ScotlandSaarGameEndpoint {
     public ResponseBean joinGame(@Named("id") long id,@Named("fireBaseToken") String fireBaseToken, @Named("playerName") String playerName) {
         GameBoard gameBoard = ofy().load().type(GameBoard.class).id(id).now();
 
-        boolean success = gameBoard.joinGame(fireBaseToken,playerName);
-        System.out.println(success);
-
+        int playerId = gameBoard.joinGame(fireBaseToken,playerName);
         ResponseBean response = new ResponseBean();
-
+        if(playerId != -1) {
+            response.setSuccess(true);
+            response.setPlayerId(playerId);
+        } else response.setSuccess(false);
         ofy().save().entity(gameBoard).now();
-        response.setSuccess(success);
+
         return response;
     }
 
@@ -155,6 +157,23 @@ public class ScotlandSaarGameEndpoint {
         return board.getGameState(true);
     }
 
+    @ApiMethod(name = "makeMove")
+    public ResponseBean makeMove(@Named("id") long id,  @Named("fireBaseToken") String token, @Named("targetPosition") int targetPosition) {
+        GameBoard board = ofy().load().type(GameBoard.class).id(id).now();
+        boolean success = false;
+        ResponseBean bean = new ResponseBean();
+        try {
+             success =  board.makeMove(token, targetPosition);
+        } catch (PlayerNotFoundException e) {
+
+        }
+
+
+        bean.setSuccess(success);
+
+
+        return bean;
+    }
 
 
 

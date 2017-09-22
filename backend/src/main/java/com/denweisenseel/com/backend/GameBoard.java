@@ -49,6 +49,7 @@ public class GameBoard {
     private int     turnCounter = 0;
     private boolean turnState = X_TURN;
     private boolean gpsEnabled = false;
+    private int idCount = 0;
 
 
     public GameBoard() {
@@ -56,32 +57,37 @@ public class GameBoard {
 
     }
 
-    public boolean createGame(String firebaseToken, String playerName, String gameName) {
+    public int createGame(String firebaseToken, String playerName, String gameName) {
         Player p = new Player();
         p.setOwner(true);
         p.setName(playerName);
         p.setFirebaseToken(firebaseToken);
+        p.setId(idCount);
+        idCount++;
 
         this.gameName = gameName;
         this.creatorName = playerName;
 
         addPlayer(p);
 
-        return true;
+        return p.getId();
     }
 
-    public boolean joinGame(String firebaseToken, String playerName) {
-        if(gameState != GAMESTATE_SETUP) return false;
+    public int joinGame(String firebaseToken, String playerName) {
+        if(gameState != GAMESTATE_SETUP) return -1;
         Player p = new Player();
         p.setFirebaseToken(firebaseToken);
         p.setName(playerName);
+        p.setId(idCount);
+        idCount++;
         int id = addPlayer(p);
 
         if(id != -1) {
             notifyPlayerJoinedLobby(p);
-            return true;
+
+            return p.getId();
         }
-        return false;
+        return -1;
     }
 
     public boolean startGame(String firebaseToken) {

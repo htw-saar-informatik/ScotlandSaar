@@ -45,6 +45,14 @@ public class DashboardFragment extends Fragment {
             }
         });
 
+        Button makeMove = (Button) view.findViewById(R.id.dashboard_makeMoveTest);
+        makeMove.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mListener.onMakeMove();
+            }
+        });
+
     }
 
     @Override
@@ -81,5 +89,6 @@ public class DashboardFragment extends Fragment {
     public interface DashboardInteractionListener {
         // TODO: Update argument type and name
         void onStartGame();
+        void onMakeMove();
     }
 }
