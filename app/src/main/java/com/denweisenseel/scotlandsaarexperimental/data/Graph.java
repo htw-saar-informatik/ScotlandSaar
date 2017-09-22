@@ -31,7 +31,6 @@ public class Graph {
         String data = loadGraphFromFile(context, resId);
         try {
             JSONObject json = new JSONObject(data);
-            Log.v(TAG, json.toString());
             nodes = new ArrayList<>();
             JSONArray array = json.getJSONArray("content");
 
@@ -56,9 +55,6 @@ public class Graph {
             e.printStackTrace();
         }
 
-        for(Node n : nodes) {
-            System.out.println(n);
-        }
     }
 
     public String loadGraphFromFile(Context context, int resId) {

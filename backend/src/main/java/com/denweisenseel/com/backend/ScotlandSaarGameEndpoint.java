@@ -128,7 +128,6 @@ public class ScotlandSaarGameEndpoint {
 
         ArrayList<GameListBean> gameList= new ArrayList<GameListBean>();
 
-        //TODO We could do this via streams, but, because I didnt want to use my brain, here is me doing some loopy stuff
 
         List<GameBoard> games = ofy().load().type(GameBoard.class).list();
 
@@ -144,6 +143,10 @@ public class ScotlandSaarGameEndpoint {
         }
         return gameList;
     }
+
+
+
+
 
     @ApiMethod(name = "sendChatMessage")
     public ResponseBean sendChatMessage(@Named("id") long id, @Named("fireBaseToken") String token, @Named("message") String message) throws PlayerNotFoundException {

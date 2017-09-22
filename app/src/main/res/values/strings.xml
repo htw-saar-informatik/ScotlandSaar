@@ -46,6 +46,7 @@
     <string name="StartGame">Start Game</string>
     <string name="isMisterX">isMisterX</string>
     <string name="playerId">playerId</string>
+    <string name="ERROR_START">Nur der Host darf das Spiel starten!</string>
 
 
 </resources>

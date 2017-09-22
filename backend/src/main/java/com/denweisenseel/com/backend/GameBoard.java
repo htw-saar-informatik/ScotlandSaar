@@ -104,6 +104,8 @@ public class GameBoard {
 
         //Setup game:
 
+        gameState = GAMESTATE_RUNNING;
+
         //ASSIGN Mister X
         int misterX = new Random("Dennis".hashCode()).nextInt(playerList.size());
 

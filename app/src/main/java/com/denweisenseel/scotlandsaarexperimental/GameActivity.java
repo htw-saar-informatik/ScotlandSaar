@@ -62,7 +62,7 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
     private ChatFragment chatFragment;
     private BroadcastReceiver chatMessageReceiver;
     private ArrayList<ChatDataParcelable> chatList;
-
+    boolean isHost = false;
 
     int unreadNotficationCounter = 0;
 
@@ -82,6 +82,8 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
 
+        isHost = getIntent().getBooleanExtra(getString(R.string.host), false);
+
         pager = (CustomViewPager) findViewById(R.id.viewpager);
         pager.setPagingEnabled(false);
 
@@ -97,6 +99,8 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
 
         dashboardFragment = DashboardFragment.newInstance("null", "null");
         bottomBarAdapter.addFragments(dashboardFragment);
+
+
 
         pager.setAdapter(bottomBarAdapter);
 
@@ -193,6 +197,8 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
 
         LocalBroadcastManager.getInstance(this).registerReceiver(gameStateReceiver, new IntentFilter(getString(R.string.LOBBY_GAME_START)));
 
+
+
         int id = getSharedPreferences(getString(R.string.gameData),Context.MODE_PRIVATE).getInt(getString(R.string.playerId), -1);
         Toast.makeText(this, String.valueOf(id), Toast.LENGTH_SHORT).show();
     }
@@ -275,30 +281,35 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
 
     @Override
     public void onStartGame() {
-        placePlayersOnMap();
-        Log.v(TAG, "Starting game!");
 
-        String gameId = String.valueOf(getSharedPreferences(getString(R.string.gameData), MODE_PRIVATE).getLong(getString(R.string.gameId),0));
-        String firebaseToken = FirebaseInstanceId.getInstance().getToken();
-        String[] args = {gameId, firebaseToken};
+        if (isHost) {
+            placePlayersOnMap();
+            Log.v(TAG, "Starting game!");
 
-        JsonObjectRequest gameRequest = new JsonObjectRequest(Request.Method.POST, RequestBuilder.buildRequestUrl(RequestBuilder.START_GAME, args ),null, new Response.Listener<JSONObject>() {
-        @Override
-        public void onResponse(JSONObject response) {
-            try {
-                Log.i(TAG, "Started game" + response.toString());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            String gameId = String.valueOf(getSharedPreferences(getString(R.string.gameData), MODE_PRIVATE).getLong(getString(R.string.gameId), 0));
+            String firebaseToken = FirebaseInstanceId.getInstance().getToken();
+            String[] args = {gameId, firebaseToken};
+
+            JsonObjectRequest gameRequest = new JsonObjectRequest(Request.Method.POST, RequestBuilder.buildRequestUrl(RequestBuilder.START_GAME, args), null, new Response.Listener<JSONObject>() {
+                @Override
+                public void onResponse(JSONObject response) {
+                    try {
+                        Log.i(TAG, "Started game" + response.toString());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    Log.e(TAG, error.toString());
+                }
+            });
+
+            VolleyRequestQueue.getInstance(this).addToRequestQueue(gameRequest);
+        } else {
+            Toast.makeText(this,R.string.ERROR_START, Toast.LENGTH_SHORT).show();
         }
-    }, new Response.ErrorListener() {
-        @Override
-        public void onErrorResponse(VolleyError error) {
-            Log.e(TAG, error.toString());
-        }
-    });
-
-        VolleyRequestQueue.getInstance(this).addToRequestQueue(gameRequest);
     }
 
     @Override
