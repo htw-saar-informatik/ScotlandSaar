@@ -134,7 +134,10 @@ public class StartMenuActivity extends AppCompatActivity implements GamenameInpu
         finish();
     }
 
-
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+    }
 
     private void saveGameId(long gameId) {
         SharedPreferences.Editor editor = getSharedPreferences(getString(R.string.gameData),Context.MODE_PRIVATE).edit();

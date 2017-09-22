@@ -1,5 +1,6 @@
 package com.denweisenseel.scotlandsaarexperimental;
 
+import android.app.FragmentManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -30,6 +31,7 @@ import com.denweisenseel.scotlandsaarexperimental.data.GameListInfoParcelable;
 import com.denweisenseel.scotlandsaarexperimental.data.GameModelParcelable;
 import com.denweisenseel.scotlandsaarexperimental.data.Graph;
 import com.denweisenseel.scotlandsaarexperimental.data.Player;
+import com.denweisenseel.scotlandsaarexperimental.dialogFragments.QuitGameFragment;
 import com.denweisenseel.scotlandsaarexperimental.data.VolleyRequestQueue;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -54,7 +56,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 
-public class GameActivity extends AppCompatActivity implements ChatFragment.ChatFragmentInteractionListener, OnMapReadyCallback, DashboardFragment.DashboardInteractionListener {
+public class GameActivity extends AppCompatActivity implements ChatFragment.ChatFragmentInteractionListener, OnMapReadyCallback, DashboardFragment.DashboardInteractionListener, QuitGameFragment.OnFragmentInteractionListener{
+
 
     BottomBarAdapter adapter;
     CustomViewPager pager;
@@ -109,7 +112,6 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
 
 
         final AHBottomNavigation navigation = (AHBottomNavigation) findViewById(R.id.navigation);
-        //TODO Beim Back Button drücken soll ein Quit Game Dialog angezeigt werden. (2 Hours)
 
         AHBottomNavigationItem item1 = new AHBottomNavigationItem(R.string.game_map, R.drawable.ic_home_black_24dp, R.color.color_tab_1);
         AHBottomNavigationItem item2 = new AHBottomNavigationItem(R.string.game_chat, R.drawable.ic_notifications_black_24dp, R.color.color_tab_1);
@@ -203,6 +205,12 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
         Toast.makeText(this, String.valueOf(id), Toast.LENGTH_SHORT).show();
     }
 
+    public void requestQuitGameDialog() {
+        FragmentManager fm = getFragmentManager();
+        QuitGameFragment editGamenameDialogFragment = QuitGameFragment.newInstance();
+        editGamenameDialogFragment.show(fm, "QuitGameDialog");
+    }
+
     private void sendToChatFragment(ChatDataParcelable chatMessage) {
         chatFragment.sendMessage(chatMessage);
     }
@@ -232,6 +240,11 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
     }
 
     @Override
+    public void onYesButtonClicked() {
+        //TODO Actually kick the player out of the game.
+        finish();
+    }
+
     public void onMapReady(final GoogleMap googleMap) {
         //TODO Setup map constraints - Those var values should be finals somewhere! Please redo (5 min)
         final LatLng UPPER_BOUND = new LatLng(49.234012, 6.995120);
