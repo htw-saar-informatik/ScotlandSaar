@@ -34,10 +34,14 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.firebase.iid.FirebaseInstanceId;
 
 import org.json.JSONArray;
@@ -95,6 +99,7 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
         pager.setAdapter(bottomBarAdapter);
 
         pager.setCurrentItem(1);
+        pager.setOffscreenPageLimit(3);
 
 
 
@@ -111,6 +116,7 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
 
         navigation.setCurrentItem(1);
 
+
         // Set listeners
         navigation.setOnTabSelectedListener(new AHBottomNavigation.OnTabSelectedListener() {
             @Override
@@ -121,6 +127,7 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
                             pager.setCurrentItem(0);
                         } else {
                             Toast.makeText(GameActivity.this, "Game hasnt started yet", Toast.LENGTH_SHORT).show();
+                            pager.setCurrentItem(0);
                         }
                         break;
                     case 1: pager.setCurrentItem(1);
@@ -269,28 +276,27 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
     }
 
     private void populateMap(String input) {
-        ArrayList<Player> playerList = new ArrayList<>();
 
         JSONObject json = null;
         try {
             json = new JSONObject(input);
             JSONObject gameState = json.getJSONObject("gameState");
             JSONArray playerArray = gameState.getJSONArray("playerList");
-
+            Log.i("DIES", String.valueOf(playerArray.length()));
 
             for(int i = 0; i < playerArray.length(); i++) {
                 JSONObject player = playerArray.getJSONObject(i);
                 Player p = new Player();
                 p.setName(player.getString("name"));
                 p.setBoardPosition(player.getInt("boardPosition"));
-                playerList.add(p);
+                gameModel.addPlayer(p);
+                Log.i("DIES", String.valueOf(gameModel.getPlayerList().size()));
             }
 
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
-        gameModel.setPlayerList(playerList);
 
         Log.i(TAG + "TEST", json.toString());
 
@@ -306,7 +312,33 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
 
     private void placePlayersOnMap() {
 
-        Graph graph = new Graph();
+        final Graph graph = new Graph();
         graph.initialize(this, R.raw.graph);
+
+        mapFragment.getMapAsync(new OnMapReadyCallback() {
+            @Override
+            public void onMapReady(GoogleMap googleMap) {
+                for(Graph.Node n : graph.getNodes()) {
+                    Log.v(TAG, "Adding Marker" + n.getId());
+                    Marker m = googleMap.addMarker(new MarkerOptions().position(n.getPosition()));
+                    gameModel.addMarker(n.getId(), m);
+
+                };
+
+                for(Graph.Node n : graph.getNodes()) {
+                    for(Integer i : n.getNeighbours()) {
+                        googleMap.addPolyline(new PolylineOptions().add(n.getPosition(), gameModel.getMarker(i).getPosition()));
+                    }
+                }
+
+                for(Player p : gameModel.getPlayerList()) {
+                    Marker m = googleMap.addMarker(new MarkerOptions()
+                            .position(gameModel.getMarker(p.getBoardPosition()).getPosition())
+                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)));
+                    Log.i(TAG, "Added marker for:" + p.getName() + "to node Id " + p.getBoardPosition() + ". Location is:" +gameModel.getMarker(p.getBoardPosition()).getPosition());
+                }
+            }
+        });
+
     }
 }

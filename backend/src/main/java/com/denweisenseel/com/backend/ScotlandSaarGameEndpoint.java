@@ -149,6 +149,12 @@ public class ScotlandSaarGameEndpoint {
         return response;
     }
 
+    @ApiMethod(name = "getGameState")
+    public GameStateBean getGameState(@Named("id") long id) {
+        GameBoard board = ofy().load().type(GameBoard.class).id(id).now();
+        return board.getGameState(true);
+    }
+
 
 
 

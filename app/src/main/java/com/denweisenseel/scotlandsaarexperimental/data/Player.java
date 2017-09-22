@@ -17,4 +17,12 @@ public class Player {
     public void setName(String name) {
         this.name = name;
     }
+
+    public int getBoardPosition() {
+        return boardPosition;
+    }
+
+    public String getName() {
+        return name;
+    }
 }
