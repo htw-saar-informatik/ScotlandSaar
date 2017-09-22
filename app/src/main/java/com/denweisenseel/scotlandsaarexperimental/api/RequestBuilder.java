@@ -69,6 +69,7 @@ public class RequestBuilder {
                     builder.append("/");
                     builder.append(args[i]);
                 }
+                break;
 
         }
 

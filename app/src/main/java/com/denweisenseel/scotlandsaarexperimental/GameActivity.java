@@ -47,6 +47,7 @@ import org.json.JSONObject;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 
 public class GameActivity extends AppCompatActivity implements ChatFragment.ChatFragmentInteractionListener, OnMapReadyCallback, DashboardFragment.DashboardInteractionListener {
 
@@ -86,16 +87,15 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
         mapFragment.getMapAsync(this);
         bottomBarAdapter.addFragments(mapFragment);
 
-        chatFragment = ChatFragment.newInstance("null","null");
+        chatFragment = ChatFragment.newInstance("null", "null");
         bottomBarAdapter.addFragments(chatFragment);
 
-        dashboardFragment = DashboardFragment.newInstance("null","null");
+        dashboardFragment = DashboardFragment.newInstance("null", "null");
         bottomBarAdapter.addFragments(dashboardFragment);
 
         pager.setAdapter(bottomBarAdapter);
 
         pager.setCurrentItem(1);
-
 
 
         final AHBottomNavigation navigation = (AHBottomNavigation) findViewById(R.id.navigation);
@@ -115,17 +115,19 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
         navigation.setOnTabSelectedListener(new AHBottomNavigation.OnTabSelectedListener() {
             @Override
             public boolean onTabSelected(int position, boolean wasSelected) {
-                switch(position) {
+                switch (position) {
                     case 0:
-                        if(pager.isActivated()) {
+                        if (pager.isActivated()) {
                             pager.setCurrentItem(0);
                         } else {
                             Toast.makeText(GameActivity.this, "Game hasnt started yet", Toast.LENGTH_SHORT).show();
                         }
                         break;
-                    case 1: pager.setCurrentItem(1);
+                    case 1:
+                        pager.setCurrentItem(1);
                         break;
-                    case 2: pager.setCurrentItem(2);
+                    case 2:
+                        pager.setCurrentItem(2);
                         break;
                 }
                 return true;
@@ -139,20 +141,20 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
         chatMessageReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                if(intent.getAction().equals(getString(R.string.LOBBY_PLAYER_JOIN))) {
+                if (intent.getAction().equals(getString(R.string.LOBBY_PLAYER_JOIN))) {
                     ArrayList<String> argList = intent.getStringArrayListExtra(getString(R.string.BROADCAST_DATA));
 
                     String playerName = argList.get(0);
-                    ChatDataParcelable chatMessage = new ChatDataParcelable(playerName,"joined the lobby", new SimpleDateFormat("HH.mm").format(new Date()));
+                    ChatDataParcelable chatMessage = new ChatDataParcelable(playerName, "joined the lobby", new SimpleDateFormat("HH.mm").format(new Date()));
                     sendToChatFragment(chatMessage);
                     chatList.add(chatMessage);
 
-                } else if(intent.getAction().equals(getString(R.string.LOBBY_PLAYER_MESSAGE))) {
+                } else if (intent.getAction().equals(getString(R.string.LOBBY_PLAYER_MESSAGE))) {
                     ArrayList<String> argList = intent.getStringArrayListExtra(getString(R.string.BROADCAST_DATA));
-                    ChatDataParcelable chatMessage = new ChatDataParcelable(argList.get(0),argList.get(1),argList.get(2));
+                    ChatDataParcelable chatMessage = new ChatDataParcelable(argList.get(0), argList.get(1), argList.get(2));
                     chatList.add(chatMessage);
                     sendToChatFragment(chatMessage);
-                    if(pager.getCurrentItem() != 1) {
+                    if (pager.getCurrentItem() != 1) {
                         unreadNotficationCounter++;
                         AHNotification notification = new AHNotification.Builder()
                                 .setText(String.valueOf(unreadNotficationCounter))
@@ -172,7 +174,7 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
         gameStateReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                if(intent.getAction().equals(getString(R.string.LOBBY_GAME_START))) {
+                if (intent.getAction().equals(getString(R.string.LOBBY_GAME_START))) {
                     String args = intent.getStringExtra(getString(R.string.BROADCAST_DATA));
                     populateMap(args);
                     navigation.enableItemAtPosition(0);
@@ -182,8 +184,6 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
 
 
         LocalBroadcastManager.getInstance(this).registerReceiver(gameStateReceiver, new IntentFilter(getString(R.string.LOBBY_GAME_START)));
-
-
     }
 
     private void sendToChatFragment(ChatDataParcelable chatMessage) {
@@ -195,18 +195,40 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
         //TODO save chat messages (1 hour)
     }
 
+    @Override
+    public void retrieveChatMessages() {
+        if (!getIntent().getBooleanExtra(getString(R.string.host), false)) {
+            Log.v(TAG, String.valueOf(chatFragment.isAdded()));
+
+            ArrayList<String> playersInLobby = getIntent().getStringArrayListExtra("players");
+            ArrayList<ChatDataParcelable> chatMessages = new ArrayList<ChatDataParcelable>();
+
+            for (int i = 0; i < playersInLobby.size(); i++){
+                chatMessages.add(new ChatDataParcelable("System", playersInLobby.get(i) + " is in the lobby", new SimpleDateFormat("HH.mm").format(new Date())));
+            }
+
+            for (int i = 0; i < chatMessages.size(); i++){
+                sendToChatFragment(chatMessages.get(i));
+            }
+            Log.i(TAG, "Printet all players in the lobby into the chat");
+        }
+    }
 
     @Override
     public void onMapReady(final GoogleMap googleMap) {
         //TODO Setup map constraints - Those var values should be finals somewhere! Please redo (5 min)
+        final LatLng UPPER_BOUND = new LatLng(49.234012, 6.995120);
+        final LatLng LOWER_BOUND = new LatLng(49.237760, 7.006214);
+        final LatLng CAMERA_POSITION = new LatLng(49.236127, 7.000402);
+        final float ZOOM_FACTOR = 16.0f;
 
         map = googleMap;
 
-        LatLngBounds bounds = new LatLngBounds( new LatLng(49.234012, 6.995120),new LatLng(49.237760, 7.006214));
+        LatLngBounds bounds = new LatLngBounds(UPPER_BOUND, LOWER_BOUND);
         googleMap.setLatLngBoundsForCameraTarget(bounds);
 
-        googleMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(49.236127, 7.000402)));
-        googleMap.animateCamera(CameraUpdateFactory.zoomTo( 16.0f ) );
+        googleMap.moveCamera(CameraUpdateFactory.newLatLng(CAMERA_POSITION));
+        googleMap.animateCamera(CameraUpdateFactory.zoomTo( ZOOM_FACTOR ) );
 
         googleMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
@@ -223,7 +245,7 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
         googleMap.setOnCameraMoveListener(new GoogleMap.OnCameraMoveListener() {
             @Override
             public void onCameraMove() {
-                float minZoom = 16.0f;
+                float minZoom = ZOOM_FACTOR;
                 CameraPosition cameraPosition = googleMap.getCameraPosition();
                 if(cameraPosition.zoom <minZoom) {
                     googleMap.animateCamera(CameraUpdateFactory.zoomTo(minZoom));
