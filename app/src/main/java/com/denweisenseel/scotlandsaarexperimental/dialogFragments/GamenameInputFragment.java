@@ -76,6 +76,7 @@ public class GamenameInputFragment extends DialogFragment {
                         else
                         {
                             inputListener.onInput(gamenameInput.getText().toString());
+                            dismiss();
                         }
                         break;
                 }
