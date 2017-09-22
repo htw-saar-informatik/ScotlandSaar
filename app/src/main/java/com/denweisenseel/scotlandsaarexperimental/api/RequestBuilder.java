@@ -29,6 +29,11 @@ public class RequestBuilder {
     private static final String START_GAME_FUNCTION = "startGame";
     private static final int START_GAME_ARGS = 2;
 
+    public static final int MAKE_MOVE = 0x05;
+    private static final String MAKE_MOVE_FUNCTION = "makeMove";
+    private static final int MAKE_MOVE_ARGS = 3;
+
+
     public static String buildRequestUrl(int requestType, String[] args) {
 
         StringBuilder builder = new StringBuilder();
@@ -66,6 +71,13 @@ public class RequestBuilder {
             case START_GAME:
                 builder.append(START_GAME_FUNCTION);
                 for(int i = 0; i < START_GAME_ARGS; ++i) {
+                    builder.append("/");
+                    builder.append(args[i]);
+                }
+                break;
+            case MAKE_MOVE:
+                builder.append(MAKE_MOVE_FUNCTION);
+                for(int i = 0; i < MAKE_MOVE_ARGS; ++i) {
                     builder.append("/");
                     builder.append(args[i]);
                 }

@@ -16,7 +16,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -27,7 +29,6 @@ import com.denweisenseel.scotlandsaarexperimental.R;
  * Created by RasSv on 19.09.2017.
  */
 public class GamenameInputFragment extends DialogFragment {
-
     private static final String TAG = "GameNameInput";
     OnGamenameInputListener inputListener;
 
@@ -49,6 +50,19 @@ public class GamenameInputFragment extends DialogFragment {
         View v = inflater.inflate(R.layout.gamename_input, container, false);
 
         final EditText gamenameInput = v.findViewById(R.id.gamenameInput_edittext_input);
+
+        gamenameInput.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean focused)
+            {
+                if (focused)
+                {
+                    getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+                }
+            }
+        });
+        gamenameInput.setFocusable(true);
+        gamenameInput.requestFocus();
 
         gamenameInput.setOnEditorActionListener(new EditText.OnEditorActionListener() {
             @Override

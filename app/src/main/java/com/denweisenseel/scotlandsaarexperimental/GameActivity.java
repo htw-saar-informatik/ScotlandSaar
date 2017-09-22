@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
@@ -28,6 +29,7 @@ import com.denweisenseel.scotlandsaarexperimental.customView.CustomViewPager;
 import com.denweisenseel.scotlandsaarexperimental.data.ChatDataParcelable;
 import com.denweisenseel.scotlandsaarexperimental.data.GameListInfoParcelable;
 import com.denweisenseel.scotlandsaarexperimental.data.GameModelParcelable;
+import com.denweisenseel.scotlandsaarexperimental.data.Graph;
 import com.denweisenseel.scotlandsaarexperimental.data.Player;
 import com.denweisenseel.scotlandsaarexperimental.dialogFragments.QuitGameFragment;
 import com.denweisenseel.scotlandsaarexperimental.data.VolleyRequestQueue;
@@ -35,10 +37,14 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.firebase.iid.FirebaseInstanceId;
 
 import org.json.JSONArray;
@@ -48,6 +54,7 @@ import org.json.JSONObject;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 
 public class GameActivity extends AppCompatActivity implements ChatFragment.ChatFragmentInteractionListener, OnMapReadyCallback, DashboardFragment.DashboardInteractionListener, QuitGameFragment.OnFragmentInteractionListener{
 
@@ -70,6 +77,7 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
 
 
     private String TAG = "GameActivity";
+    private GoogleMap map;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,16 +95,16 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
         mapFragment.getMapAsync(this);
         bottomBarAdapter.addFragments(mapFragment);
 
-        chatFragment = ChatFragment.newInstance("null","null");
+        chatFragment = ChatFragment.newInstance("null", "null");
         bottomBarAdapter.addFragments(chatFragment);
 
-        dashboardFragment = DashboardFragment.newInstance("null","null");
+        dashboardFragment = DashboardFragment.newInstance("null", "null");
         bottomBarAdapter.addFragments(dashboardFragment);
 
         pager.setAdapter(bottomBarAdapter);
 
         pager.setCurrentItem(1);
-
+        pager.setOffscreenPageLimit(3);
 
 
         final AHBottomNavigation navigation = (AHBottomNavigation) findViewById(R.id.navigation);
@@ -111,21 +119,25 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
 
         navigation.setCurrentItem(1);
 
+
         // Set listeners
         navigation.setOnTabSelectedListener(new AHBottomNavigation.OnTabSelectedListener() {
             @Override
             public boolean onTabSelected(int position, boolean wasSelected) {
-                switch(position) {
+                switch (position) {
                     case 0:
-                        if(pager.isActivated()) {
+                        if (pager.isActivated()) {
                             pager.setCurrentItem(0);
                         } else {
                             Toast.makeText(GameActivity.this, "Game hasnt started yet", Toast.LENGTH_SHORT).show();
+                            pager.setCurrentItem(0);
                         }
                         break;
-                    case 1: pager.setCurrentItem(1);
+                    case 1:
+                        pager.setCurrentItem(1);
                         break;
-                    case 2: pager.setCurrentItem(2);
+                    case 2:
+                        pager.setCurrentItem(2);
                         break;
                 }
                 return true;
@@ -139,20 +151,20 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
         chatMessageReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                if(intent.getAction().equals(getString(R.string.LOBBY_PLAYER_JOIN))) {
+                if (intent.getAction().equals(getString(R.string.LOBBY_PLAYER_JOIN))) {
                     ArrayList<String> argList = intent.getStringArrayListExtra(getString(R.string.BROADCAST_DATA));
 
                     String playerName = argList.get(0);
-                    ChatDataParcelable chatMessage = new ChatDataParcelable(playerName,"joined the lobby", new SimpleDateFormat("HH.mm").format(new Date()));
+                    ChatDataParcelable chatMessage = new ChatDataParcelable(playerName, "joined the lobby", new SimpleDateFormat("HH.mm").format(new Date()));
                     sendToChatFragment(chatMessage);
                     chatList.add(chatMessage);
 
-                } else if(intent.getAction().equals(getString(R.string.LOBBY_PLAYER_MESSAGE))) {
+                } else if (intent.getAction().equals(getString(R.string.LOBBY_PLAYER_MESSAGE))) {
                     ArrayList<String> argList = intent.getStringArrayListExtra(getString(R.string.BROADCAST_DATA));
-                    ChatDataParcelable chatMessage = new ChatDataParcelable(argList.get(0),argList.get(1),argList.get(2));
+                    ChatDataParcelable chatMessage = new ChatDataParcelable(argList.get(0), argList.get(1), argList.get(2));
                     chatList.add(chatMessage);
                     sendToChatFragment(chatMessage);
-                    if(pager.getCurrentItem() != 1) {
+                    if (pager.getCurrentItem() != 1) {
                         unreadNotficationCounter++;
                         AHNotification notification = new AHNotification.Builder()
                                 .setText(String.valueOf(unreadNotficationCounter))
@@ -172,7 +184,7 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
         gameStateReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                if(intent.getAction().equals(getString(R.string.LOBBY_GAME_START))) {
+                if (intent.getAction().equals(getString(R.string.LOBBY_GAME_START))) {
                     String args = intent.getStringExtra(getString(R.string.BROADCAST_DATA));
                     populateMap(args);
                     navigation.enableItemAtPosition(0);
@@ -183,7 +195,8 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
 
         LocalBroadcastManager.getInstance(this).registerReceiver(gameStateReceiver, new IntentFilter(getString(R.string.LOBBY_GAME_START)));
 
-
+        int id = getSharedPreferences(getString(R.string.gameData),Context.MODE_PRIVATE).getInt(getString(R.string.playerId), -1);
+        Toast.makeText(this, String.valueOf(id), Toast.LENGTH_SHORT).show();
     }
 
     public void requestQuitGameDialog() {
@@ -201,6 +214,24 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
         //TODO save chat messages (1 hour)
     }
 
+    @Override
+    public void retrieveChatMessages() {
+        if (!getIntent().getBooleanExtra(getString(R.string.host), false)) {
+            Log.v(TAG, String.valueOf(chatFragment.isAdded()));
+
+            ArrayList<String> playersInLobby = getIntent().getStringArrayListExtra("players");
+            ArrayList<ChatDataParcelable> chatMessages = new ArrayList<ChatDataParcelable>();
+
+            for (int i = 0; i < playersInLobby.size(); i++){
+                chatMessages.add(new ChatDataParcelable("System", playersInLobby.get(i) + " is in the lobby", new SimpleDateFormat("HH.mm").format(new Date())));
+            }
+
+            for (int i = 0; i < chatMessages.size(); i++){
+                sendToChatFragment(chatMessages.get(i));
+            }
+            Log.i(TAG, "Printet all players in the lobby into the chat");
+        }
+    }
 
     @Override
     public void onYesButtonClicked() {
@@ -210,12 +241,18 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
 
     public void onMapReady(final GoogleMap googleMap) {
         //TODO Setup map constraints - Those var values should be finals somewhere! Please redo (5 min)
+        final LatLng UPPER_BOUND = new LatLng(49.234012, 6.995120);
+        final LatLng LOWER_BOUND = new LatLng(49.237760, 7.006214);
+        final LatLng CAMERA_POSITION = new LatLng(49.236127, 7.000402);
+        final float ZOOM_FACTOR = 16.0f;
 
-        LatLngBounds bounds = new LatLngBounds( new LatLng(49.234012, 6.995120),new LatLng(49.237760, 7.006214));
+        map = googleMap;
+
+        LatLngBounds bounds = new LatLngBounds(UPPER_BOUND, LOWER_BOUND);
         googleMap.setLatLngBoundsForCameraTarget(bounds);
 
-        googleMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(49.236127, 7.000402)));
-        googleMap.animateCamera(CameraUpdateFactory.zoomTo( 16.0f ) );
+        googleMap.moveCamera(CameraUpdateFactory.newLatLng(CAMERA_POSITION));
+        googleMap.animateCamera(CameraUpdateFactory.zoomTo( ZOOM_FACTOR ) );
 
         googleMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
@@ -232,17 +269,26 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
         googleMap.setOnCameraMoveListener(new GoogleMap.OnCameraMoveListener() {
             @Override
             public void onCameraMove() {
-                float minZoom = 16.0f;
+                float minZoom = ZOOM_FACTOR;
                 CameraPosition cameraPosition = googleMap.getCameraPosition();
                 if(cameraPosition.zoom <minZoom) {
                     googleMap.animateCamera(CameraUpdateFactory.zoomTo(minZoom));
                 }
             }
         });
+
+        initMap(googleMap);
+    }
+
+    private void initMap(GoogleMap googleMap) {
+
+
+
     }
 
     @Override
     public void onStartGame() {
+        placePlayersOnMap();
         Log.v(TAG, "Starting game!");
 
         String gameId = String.valueOf(getSharedPreferences(getString(R.string.gameData), MODE_PRIVATE).getLong(getString(R.string.gameId),0));
@@ -268,39 +314,93 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
         VolleyRequestQueue.getInstance(this).addToRequestQueue(gameRequest);
     }
 
+    @Override
+    public void onMakeMove() {
+        makeMove(10);
+    }
+
     private void populateMap(String input) {
-        Log.i(TAG,"TesTtetewt");
-        Log.i(TAG,input);
 
         JSONObject json = null;
         try {
-
             json = new JSONObject(input);
-
-            Log.i(TAG + "TEST1", json.toString());
             JSONObject gameState = json.getJSONObject("gameState");
             JSONArray playerArray = gameState.getJSONArray("playerList");
+            Log.i("DIES", String.valueOf(playerArray.length()));
 
-            ArrayList<Player> playerList = new ArrayList<>();
-
-            Log.i(TAG + "TEST112", playerArray.toString());
             for(int i = 0; i < playerArray.length(); i++) {
                 JSONObject player = playerArray.getJSONObject(i);
                 Player p = new Player();
                 p.setName(player.getString("name"));
                 p.setBoardPosition(player.getInt("boardPosition"));
-                Log.v("TESTopo", player.getString("name"));
+                gameModel.addPlayer(p);
+                Log.i("DIES", String.valueOf(gameModel.getPlayerList().size()));
             }
 
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
+
         Log.i(TAG + "TEST", json.toString());
 
+        placePlayersOnMap();
+
+    }
 
 
 
+    private void placePlayersOnMap() {
 
+        final Graph graph = new Graph();
+        graph.initialize(this, R.raw.graph);
+
+        mapFragment.getMapAsync(new OnMapReadyCallback() {
+            @Override
+            public void onMapReady(GoogleMap googleMap) {
+                for(Graph.Node n : graph.getNodes()) {
+                    Log.v(TAG, "Adding Marker" + n.getId());
+                    Marker m = googleMap.addMarker(new MarkerOptions().position(n.getPosition()));
+                    gameModel.addMarker(n.getId(), m);
+
+                };
+
+                for(Graph.Node n : graph.getNodes()) {
+                    for(Integer i : n.getNeighbours()) {
+                        googleMap.addPolyline(new PolylineOptions().add(n.getPosition(), gameModel.getMarker(i).getPosition()));
+                    }
+                }
+
+                for(Player p : gameModel.getPlayerList()) {
+                    Marker m = googleMap.addMarker(new MarkerOptions()
+                            .position(gameModel.getMarker(p.getBoardPosition()).getPosition())
+                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)));
+                    Log.i(TAG, "Added marker for:" + p.getName() + "to node Id " + p.getBoardPosition() + ". Location is:" +gameModel.getMarker(p.getBoardPosition()).getPosition());
+                }
+            }
+        });
+    }
+
+    private boolean makeMove(int targetPosition) {
+        String firebaseToken = FirebaseInstanceId.getInstance().getToken();
+        String gameId = String.valueOf(getSharedPreferences(getString(R.string.gameData), MODE_PRIVATE).getLong(getString(R.string.gameId),0));
+
+        String[] requestARGS = new String[] {gameId,firebaseToken,String.valueOf(targetPosition)};
+
+        JsonObjectRequest gameRequest = new JsonObjectRequest(Request.Method.POST, RequestBuilder.
+                buildRequestUrl(RequestBuilder.MAKE_MOVE, requestARGS),null, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                Log.v(TAG, "Made move");
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e(TAG, error.toString());
+            }
+        });
+
+        VolleyRequestQueue.getInstance(this).addToRequestQueue(gameRequest);
+        return true;
     }
 }

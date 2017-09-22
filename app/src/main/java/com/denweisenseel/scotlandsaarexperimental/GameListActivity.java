@@ -19,6 +19,7 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.denweisenseel.scotlandsaarexperimental.adapter.GameListModelAdapter;
 import com.denweisenseel.scotlandsaarexperimental.api.RequestBuilder;
 import com.denweisenseel.scotlandsaarexperimental.data.GameListInfoParcelable;
+import com.denweisenseel.scotlandsaarexperimental.data.Player;
 import com.denweisenseel.scotlandsaarexperimental.data.VolleyRequestQueue;
 import com.google.firebase.iid.FirebaseInstanceId;
 
@@ -77,18 +78,22 @@ public class GameListActivity extends AppCompatActivity {
             @Override
             public void onResponse(JSONObject response) {
                 try {
-                    if(response.has(getString(R.string.protocol_success))) {
-                        if(response.getBoolean(getString(R.string.protocol_success))) {
-                            Intent i = new Intent(GameListActivity.this, LobbyActivity.class);
+                    if(response.getBoolean("success")){ //response.has(getString(R.string.protocol_success))) {
 
-                            SharedPreferences.Editor editor = getSharedPreferences(getString(R.string.gameData),Context.MODE_PRIVATE).edit();
-                            editor.putLong(getString(R.string.gameId), Long.valueOf(gameId));
-                            editor.commit();
-                            //TODO Add information: Whos in the lobby? ( 3 hours )
+                        Intent i = new Intent(GameListActivity.this, GameActivity.class);
+                        ArrayList<String> players = new ArrayList<String>();
 
-                            startActivity(i);
-                            Log.i(TAG, "Join GameLobby");
+                        SharedPreferences.Editor editor = getSharedPreferences(getString(R.string.gameData),Context.MODE_PRIVATE).edit();
+                        editor.putLong(getString(R.string.gameId), Long.valueOf(gameId));
+                        int playerId = response.getInt(getString(R.string.playerId));
+                        savePlayerId(playerId);
+                        for (int x = 0; x < response.getJSONArray("playerInLobby").length(); x++){
+                            players.add(response.getJSONArray("playerInLobby").getJSONObject(x).getString("name"));
                         }
+                        i.putExtra(getString(R.string.host),false);
+                        i.putExtra("players", players);
+                        startActivity(i);
+                        Log.i(TAG, "Puted the playerArray into the intent");
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -104,6 +109,12 @@ public class GameListActivity extends AppCompatActivity {
         VolleyRequestQueue.getInstance(this).addToRequestQueue(gameRequest);
     }
 
+
+    private void savePlayerId(int id) {
+        SharedPreferences.Editor editor = getSharedPreferences(getString(R.string.gameData),Context.MODE_PRIVATE).edit();
+        editor.putInt(getString(R.string.playerId), id);
+        editor.commit();
+    }
 
     private void fetchGameList() {
         String noArgs[] = {}; //TODO Refactor this! its silly to pass a empty string array (1 hour)

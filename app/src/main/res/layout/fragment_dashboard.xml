@@ -12,4 +12,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/StartGame" />
+
+    <Button
+        android:id="@+id/dashboard_makeMoveTest"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="MAKE MOVE TEST" />
 </LinearLayout>

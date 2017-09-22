@@ -25,7 +25,7 @@
     <string name="GAME_LIST_ITEM_GAMENAME">gameName</string>
     <string name="GAME_LIST_ITEM_GAMEID">gameId</string>
     <string name="GAME_LIST_ITEM_PLAYERCOUNT">playerCount</string>
-    <string name="protocol_success">success</string>
+    <string name="protocol_success">true</string>
     <string name="protocol_type">type</string>
     <string name="gameData">gameDataFile</string>
     <string name="BROADCAST_DATA">broadcast_data</string>
@@ -45,6 +45,7 @@
     <string name="username_input_request">Please enter your username!</string>
     <string name="StartGame">Start Game</string>
     <string name="isMisterX">isMisterX</string>
+    <string name="playerId">playerId</string>
 
 
 </resources>
