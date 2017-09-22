@@ -79,10 +79,12 @@ public class Graph {
         return text.toString();
     }
 
+    public ArrayList<Node> getNodes() {
+        return nodes;
+    }
 
 
-
-    private class Node {
+    public class Node {
 
         private int id;
         private LatLng position;
@@ -101,6 +103,20 @@ public class Graph {
         @Override
         public String toString() {
             return "{id:"+id+","+position.toString()+","+neighbours.toString()+"}";
+        }
+
+        public LatLng getPosition() {
+            return position;
+        }
+
+        public int getId() {
+
+            return id;
+        }
+
+
+        public ArrayList<Integer> getNeighbours() {
+            return neighbours;
         }
     }
 
