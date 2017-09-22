@@ -27,6 +27,7 @@ import com.denweisenseel.scotlandsaarexperimental.customView.CustomViewPager;
 import com.denweisenseel.scotlandsaarexperimental.data.ChatDataParcelable;
 import com.denweisenseel.scotlandsaarexperimental.data.GameListInfoParcelable;
 import com.denweisenseel.scotlandsaarexperimental.data.GameModelParcelable;
+import com.denweisenseel.scotlandsaarexperimental.data.Graph;
 import com.denweisenseel.scotlandsaarexperimental.data.Player;
 import com.denweisenseel.scotlandsaarexperimental.data.VolleyRequestQueue;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -241,6 +242,7 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
 
     @Override
     public void onStartGame() {
+        placePlayersOnMap();
         Log.v(TAG, "Starting game!");
 
         String gameId = String.valueOf(getSharedPreferences(getString(R.string.gameData), MODE_PRIVATE).getLong(getString(R.string.gameId),0));
@@ -300,6 +302,11 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
 
     }
 
+
+
     private void placePlayersOnMap() {
+
+        Graph graph = new Graph();
+        graph.initialize(this, R.raw.graph);
     }
 }
