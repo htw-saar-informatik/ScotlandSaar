@@ -28,11 +28,14 @@ public class StartMenuActivity extends AppCompatActivity implements GamenameInpu
 
     private final String TAG = "StartMenu";
     private String gameName = "Null";
+    View progressOverlay;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        progressOverlay = findViewById(R.id.progress_overlay);
+        progressOverlay.setVisibility(View.GONE);
 
         Button startGame = (Button) findViewById(R.id.STARTMENU_StartGame);
         startGame.setOnClickListener(new View.OnClickListener() {
@@ -146,6 +149,7 @@ public class StartMenuActivity extends AppCompatActivity implements GamenameInpu
     @Override
     public void onInput(String string) {
         gameName = string;
+        progressOverlay.setVisibility(View.VISIBLE);
         startGame();
     }
 }

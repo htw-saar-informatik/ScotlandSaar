@@ -35,7 +35,7 @@ public class GameListActivity extends AppCompatActivity {
     private ArrayList<GameListInfoParcelable> gameList = new ArrayList<>();
     private GameListModelAdapter gameListAdapter;
     private final String TAG = "GAMELIST";
-
+    View progressOverlay;
     SwipeRefreshLayout srl;
 
     @Override
@@ -68,6 +68,8 @@ public class GameListActivity extends AppCompatActivity {
     }
 
     private void joinGame(final long gameId) {
+        progressOverlay = findViewById(R.id.progress_overlay);
+        progressOverlay.setVisibility(View.VISIBLE);
         String firebaseToken = FirebaseInstanceId.getInstance().getToken();
         String gameIdentiier = String.valueOf(gameId);
         String playerName = getSharedPreferences(getString(R.string.gameData),Context.MODE_PRIVATE).getString(getString(R.string.username),"NULL");
@@ -79,7 +81,7 @@ public class GameListActivity extends AppCompatActivity {
             public void onResponse(JSONObject response) {
                 try {
                     if(response.getBoolean("success")){ //response.has(getString(R.string.protocol_success))) {
-
+                        progressOverlay.setVisibility(View.GONE);
                         Intent i = new Intent(GameListActivity.this, GameActivity.class);
                         ArrayList<String> players = new ArrayList<String>();
 
@@ -96,6 +98,7 @@ public class GameListActivity extends AppCompatActivity {
                         Log.i(TAG, "Puted the playerArray into the intent");
                     }
                 } catch (JSONException e) {
+                    progressOverlay.setVisibility(View.GONE);
                     e.printStackTrace();
                 }
             }
