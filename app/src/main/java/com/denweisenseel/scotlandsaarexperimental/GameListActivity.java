@@ -85,6 +85,8 @@ public class GameListActivity extends AppCompatActivity {
 
                         SharedPreferences.Editor editor = getSharedPreferences(getString(R.string.gameData),Context.MODE_PRIVATE).edit();
                         editor.putLong(getString(R.string.gameId), Long.valueOf(gameId));
+                        int playerId = response.getInt(getString(R.string.playerId));
+                        savePlayerId(playerId);
                         for (int x = 0; x < response.getJSONArray("playerInLobby").length(); x++){
                             players.add(response.getJSONArray("playerInLobby").getJSONObject(x).getString("name"));
                         }
