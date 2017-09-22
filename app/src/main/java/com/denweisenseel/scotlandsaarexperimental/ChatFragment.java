@@ -132,6 +132,12 @@ public class ChatFragment extends Fragment {
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+        mListener.retrieveChatMessages();
+    }
+
+    @Override
     public void onAttach(Context context) {
         super.onAttach(context);
         if (context instanceof ChatFragmentInteractionListener) {
@@ -165,6 +171,8 @@ public class ChatFragment extends Fragment {
      */
     public interface ChatFragmentInteractionListener {
         void onFragmentInteraction(ChatDataParcelable chatDataParcelable);
+
+        void retrieveChatMessages();
     }
 
 

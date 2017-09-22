@@ -10,6 +10,7 @@ import com.denweisenseel.com.backend.beans.GameListBean;
 import com.denweisenseel.com.backend.beans.GameStateBean;
 import com.denweisenseel.com.backend.beans.ResponseBean;
 import com.denweisenseel.com.backend.data.Geolocation;
+import com.denweisenseel.com.backend.data.Player;
 import com.denweisenseel.com.backend.exceptions.PlayerNotFoundException;
 import com.google.api.server.spi.config.Api;
 import com.google.api.server.spi.config.ApiMethod;
@@ -63,6 +64,11 @@ public class ScotlandSaarGameEndpoint {
     public ResponseBean joinGame(@Named("id") long id,@Named("fireBaseToken") String fireBaseToken, @Named("playerName") String playerName) {
         GameBoard gameBoard = ofy().load().type(GameBoard.class).id(id).now();
 
+        ArrayList<Player> playerInTheLobby = new ArrayList<>();
+        for (int i = 0; i < gameBoard.getPlayerList().size(); i++){
+            playerInTheLobby.add(gameBoard.getPlayerList().get(i));
+        }
+
         boolean success = gameBoard.joinGame(fireBaseToken,playerName);
         System.out.println(success);
 
@@ -70,6 +76,7 @@ public class ScotlandSaarGameEndpoint {
 
         ofy().save().entity(gameBoard).now();
         response.setSuccess(success);
+        response.setPlayerInLobby(playerInTheLobby);
         return response;
     }
 
@@ -148,8 +155,4 @@ public class ScotlandSaarGameEndpoint {
 
         return response;
     }
-
-
-
-
 }
