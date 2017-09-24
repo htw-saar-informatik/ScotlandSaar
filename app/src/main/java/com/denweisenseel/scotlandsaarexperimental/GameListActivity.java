@@ -71,7 +71,7 @@ public class GameListActivity extends AppCompatActivity {
         progressOverlay = findViewById(R.id.progress_overlay);
         progressOverlay.setVisibility(View.VISIBLE);
         String firebaseToken = FirebaseInstanceId.getInstance().getToken();
-        String gameIdentiier = String.valueOf(gameId);
+        final String gameIdentiier = String.valueOf(gameId);
         String playerName = getSharedPreferences(getString(R.string.gameData),Context.MODE_PRIVATE).getString(getString(R.string.username),"NULL");
 
         String args[] = {gameIdentiier,firebaseToken,playerName};
@@ -84,9 +84,7 @@ public class GameListActivity extends AppCompatActivity {
                         progressOverlay.setVisibility(View.GONE);
                         Intent i = new Intent(GameListActivity.this, GameActivity.class);
                         ArrayList<String> players = new ArrayList<String>();
-
-                        SharedPreferences.Editor editor = getSharedPreferences(getString(R.string.gameData),Context.MODE_PRIVATE).edit();
-                        editor.putLong(getString(R.string.gameId), Long.valueOf(gameId));
+                        i.putExtra(getString(R.string.gameId), gameIdentiier);
                         int playerId = response.getInt(getString(R.string.playerId));
                         savePlayerId(playerId);
                         for (int x = 0; x < response.getJSONArray("playerInLobby").length(); x++){
@@ -95,7 +93,7 @@ public class GameListActivity extends AppCompatActivity {
                         i.putExtra(getString(R.string.host),false);
                         i.putExtra("players", players);
                         startActivity(i);
-                        Log.i(TAG, "Puted the playerArray into the intent");
+                        finish();
                     }
                 } catch (JSONException e) {
                     progressOverlay.setVisibility(View.GONE);

@@ -57,10 +57,11 @@ public class ChatFragment extends Fragment {
         // Required empty public constructor
     }
 
-    public static ChatFragment newInstance(String param1, String param2) {
+    public static ChatFragment newInstance(String gameId) {
         ChatFragment fragment = new ChatFragment();
-        //Bundle args = new Bundle();
-        //fragment.setArguments(args);
+        Bundle args = new Bundle();
+        args.putString("gameId", gameId);
+        fragment.setArguments(args);
         return fragment;
     }
 
@@ -68,7 +69,7 @@ public class ChatFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-
+            this.gameId = getArguments().getString("gameId");
         }
 
 
@@ -179,7 +180,6 @@ public class ChatFragment extends Fragment {
     private void sendChatMessage(final String message) {
 
         String firebaseToken = FirebaseInstanceId.getInstance().getToken();
-        String gameId = String.valueOf(getActivity().getSharedPreferences(getString(R.string.gameData),Context.MODE_PRIVATE).getLong(getString(R.string.gameId), 0));
         String[] args = {gameId,firebaseToken, message};
 
 

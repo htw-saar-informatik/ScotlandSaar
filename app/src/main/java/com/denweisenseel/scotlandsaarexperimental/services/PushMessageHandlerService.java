@@ -59,9 +59,10 @@ public class PushMessageHandlerService extends FirebaseMessagingService {
                 Log.i("TEST", args);
                 forwardToMap(getString(R.string.LOBBY_GAME_START),  args);
             } else if(m.get((getString(R.string.protocol_type))).equals(getString(R.string.GAME_TURN_START_X))) {
-
+                forwardToMap(getString(R.string.GAME_TURN_START_X), null);
+            } else if(m.get((getString(R.string.protocol_type))).equals(getString(R.string.TURN_START_PLAYER))) {
+                forwardToMap(getString(R.string.TURN_START_PLAYER), null);
             }
-
 
             //GAME
 

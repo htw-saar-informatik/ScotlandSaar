@@ -1,19 +1,18 @@
 package com.denweisenseel.scotlandsaarexperimental;
 
 import android.app.FragmentManager;
+import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
+import android.location.Location;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.design.widget.BottomNavigationView;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.android.volley.Request;
@@ -27,17 +26,16 @@ import com.denweisenseel.scotlandsaarexperimental.adapter.BottomBarAdapter;
 import com.denweisenseel.scotlandsaarexperimental.api.RequestBuilder;
 import com.denweisenseel.scotlandsaarexperimental.customView.CustomViewPager;
 import com.denweisenseel.scotlandsaarexperimental.data.ChatDataParcelable;
-import com.denweisenseel.scotlandsaarexperimental.data.GameListInfoParcelable;
-import com.denweisenseel.scotlandsaarexperimental.data.GameModelParcelable;
 import com.denweisenseel.scotlandsaarexperimental.data.Graph;
+import com.denweisenseel.scotlandsaarexperimental.data.MarkerTag;
 import com.denweisenseel.scotlandsaarexperimental.data.Player;
 import com.denweisenseel.scotlandsaarexperimental.dialogFragments.QuitGameFragment;
 import com.denweisenseel.scotlandsaarexperimental.data.VolleyRequestQueue;
+import com.denweisenseel.scotlandsaarexperimental.services.GameLocationListener;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
@@ -54,11 +52,15 @@ import org.json.JSONObject;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 
-public class GameActivity extends AppCompatActivity implements ChatFragment.ChatFragmentInteractionListener, OnMapReadyCallback, DashboardFragment.DashboardInteractionListener, QuitGameFragment.OnFragmentInteractionListener{
+//TODO Cleanup those interfaces. Create and pass them to the fragment or whatever they belong to
+
+public class GameActivity extends AppCompatActivity implements ChatFragment.ChatFragmentInteractionListener,
+        OnMapReadyCallback, DashboardFragment.DashboardInteractionListener,
+        QuitGameFragment.OnFragmentInteractionListener, GameLocationListener.GPSCallbackInterface {
 
 
+    private static final int NOTIFICATION_ID = 001;
     BottomBarAdapter adapter;
     CustomViewPager pager;
     //CHAT
@@ -67,6 +69,7 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
     private ArrayList<ChatDataParcelable> chatList;
     boolean isHost = false;
 
+    String gameId;
     int unreadNotficationCounter = 0;
 
     private SupportMapFragment mapFragment;
@@ -86,6 +89,7 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
         setContentView(R.layout.activity_game);
 
         isHost = getIntent().getBooleanExtra(getString(R.string.host), false);
+        gameId = getIntent().getStringExtra(getString(R.string.gameId));
 
         pager = (CustomViewPager) findViewById(R.id.viewpager);
         pager.setPagingEnabled(false);
@@ -97,7 +101,7 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
         mapFragment.getMapAsync(this);
         bottomBarAdapter.addFragments(mapFragment);
 
-        chatFragment = ChatFragment.newInstance("null", "null");
+        chatFragment = ChatFragment.newInstance(gameId);
         bottomBarAdapter.addFragments(chatFragment);
 
         dashboardFragment = DashboardFragment.newInstance("null", "null");
@@ -192,12 +196,18 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
                     String args = intent.getStringExtra(getString(R.string.BROADCAST_DATA));
                     populateMap(args);
                     navigation.enableItemAtPosition(0);
+                } else if(intent.getAction().equals(getString(R.string.GAME_TURN_START_X))) {
+                    setNotification("Mister X ist an der Reihe!");
+                } else if(intent.getAction().equals(getString(R.string.TURN_START_PLAYER))) {
+                    setNotification("Spieler sind an der Reihe!");
                 }
             }
         };
 
 
         LocalBroadcastManager.getInstance(this).registerReceiver(gameStateReceiver, new IntentFilter(getString(R.string.LOBBY_GAME_START)));
+        LocalBroadcastManager.getInstance(this).registerReceiver(gameStateReceiver, new IntentFilter(getString(R.string.GAME_TURN_START_X)));
+        LocalBroadcastManager.getInstance(this).registerReceiver(gameStateReceiver, new IntentFilter(getString(R.string.TURN_START_PLAYER)));
 
 
 
@@ -264,7 +274,7 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
             @Override
             public boolean onMarkerClick(Marker marker) {
                 try {
-                    //SEND MoveRequest to server!
+                    if(marker.getTag() != null) makeMove((Integer) marker.getTag());
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -283,23 +293,15 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
             }
         });
 
-        initMap(googleMap);
-    }
-
-    private void initMap(GoogleMap googleMap) {
-
-
 
     }
+
 
     @Override
     public void onStartGame() {
-
         if (isHost) {
-            placePlayersOnMap();
             Log.v(TAG, "Starting game!");
 
-            String gameId = String.valueOf(getSharedPreferences(getString(R.string.gameData), MODE_PRIVATE).getLong(getString(R.string.gameId), 0));
             String firebaseToken = FirebaseInstanceId.getInstance().getToken();
             String[] args = {gameId, firebaseToken};
 
@@ -308,6 +310,7 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
                 public void onResponse(JSONObject response) {
                     try {
                         Log.i(TAG, "Started game" + response.toString());
+                        placePlayersOnMap();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -352,17 +355,13 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
             e.printStackTrace();
         }
 
-
         Log.i(TAG + "TEST", json.toString());
 
         placePlayersOnMap();
 
     }
 
-
-
     private void placePlayersOnMap() {
-
         final Graph graph = new Graph();
         graph.initialize(this, R.raw.graph);
 
@@ -371,8 +370,10 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
             public void onMapReady(GoogleMap googleMap) {
                 for(Graph.Node n : graph.getNodes()) {
                     Log.v(TAG, "Adding Marker" + n.getId());
-                    Marker m = googleMap.addMarker(new MarkerOptions().position(n.getPosition()));
+                    Marker m = googleMap.addMarker(new MarkerOptions().position(n.getPosition()).title(String.valueOf(n.getId())));
+                    m.setTag(n.getId());
                     gameModel.addMarker(n.getId(), m);
+
 
                 };
 
@@ -387,6 +388,7 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
                             .position(gameModel.getMarker(p.getBoardPosition()).getPosition())
                             .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)));
                     Log.i(TAG, "Added marker for:" + p.getName() + "to node Id " + p.getBoardPosition() + ". Location is:" +gameModel.getMarker(p.getBoardPosition()).getPosition());
+                    p.setMarker(m);
                 }
             }
         });
@@ -394,7 +396,6 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
 
     private boolean makeMove(int targetPosition) {
         String firebaseToken = FirebaseInstanceId.getInstance().getToken();
-        String gameId = String.valueOf(getSharedPreferences(getString(R.string.gameData), MODE_PRIVATE).getLong(getString(R.string.gameId),0));
 
         String[] requestARGS = new String[] {gameId,firebaseToken,String.valueOf(targetPosition)};
 
@@ -402,7 +403,8 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
                 buildRequestUrl(RequestBuilder.MAKE_MOVE, requestARGS),null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
-                Log.v(TAG, "Made move");
+                Log.v(TAG, response.toString());
+
             }
         }, new Response.ErrorListener() {
             @Override
@@ -413,5 +415,28 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
 
         VolleyRequestQueue.getInstance(this).addToRequestQueue(gameRequest);
         return true;
+    }
+
+    public void setNotification(String s) {
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
+                .setSmallIcon(R.drawable.ic_notifications_black_24dp)
+                .setContentTitle(getString(R.string.SCOTLANDSAAR))
+                .setContentText(s);
+
+        NotificationManager mNotifyMgr =
+                (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        mNotifyMgr.notify(NOTIFICATION_ID, builder.build());
+    }
+
+
+    @Override
+    public void gpsDeactivated(String s) {
+
+    }
+
+    @Override
+    public void updatePosition(Location location) {
+
     }
 }

@@ -8,6 +8,7 @@ package com.denweisenseel.com.backend;
 
 import com.denweisenseel.com.backend.beans.GameListBean;
 import com.denweisenseel.com.backend.beans.GameStateBean;
+import com.denweisenseel.com.backend.beans.MakeMoveResponseBean;
 import com.denweisenseel.com.backend.beans.ResponseBean;
 import com.denweisenseel.com.backend.data.Geolocation;
 import com.denweisenseel.com.backend.data.Player;
@@ -168,18 +169,12 @@ public class ScotlandSaarGameEndpoint {
     }
 
     @ApiMethod(name = "makeMove")
-    public ResponseBean makeMove(@Named("id") long id,  @Named("fireBaseToken") String token, @Named("targetPosition") int targetPosition) {
+    public MakeMoveResponseBean makeMove(@Named("id") long id, @Named("fireBaseToken") String token, @Named("targetPosition") int targetPosition) throws PlayerNotFoundException {
         GameBoard board = ofy().load().type(GameBoard.class).id(id).now();
-        boolean success = false;
-        ResponseBean bean = new ResponseBean();
-        try {
-             success =  board.makeMove(token, targetPosition);
-        } catch (PlayerNotFoundException e) {
+        MakeMoveResponseBean bean = new MakeMoveResponseBean();
 
-        }
-
-
-        bean.setSuccess(success);
+        bean =  board.makeMove(token, targetPosition);
+        ofy().save().entity(board).now();
 
 
         return bean;

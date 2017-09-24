@@ -47,6 +47,9 @@
     <string name="isMisterX">isMisterX</string>
     <string name="playerId">playerId</string>
     <string name="ERROR_START">Nur der Host darf das Spiel starten!</string>
+    <string name="SCOTLANDSAAR">ScottlandSaar</string>
+    <string name="TURN_START_PLAYER">TURN_START_PLAYER</string>
+    <string name="GAME_YOU_MISTERX">YOU_MISTER_X</string>
 
 
 </resources>

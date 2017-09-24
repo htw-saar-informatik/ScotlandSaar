@@ -1,6 +1,7 @@
 package com.denweisenseel.com.backend;
 
 import com.denweisenseel.com.backend.beans.GameStateBean;
+import com.denweisenseel.com.backend.beans.MakeMoveResponseBean;
 import com.denweisenseel.com.backend.data.Geolocation;
 import com.denweisenseel.com.backend.data.Node;
 import com.denweisenseel.com.backend.data.Player;
@@ -127,28 +128,50 @@ public class GameBoard {
 
 
 
-
-    public boolean makeMove(String fireBaseToken, int targetNodeId) throws PlayerNotFoundException {
+    public MakeMoveResponseBean makeMove(String fireBaseToken, int targetNodeId) throws PlayerNotFoundException {
         Player p = getPlayerByFirebaseToken(fireBaseToken);
 
-        if(p.getPlayerState() != Player.PlayerState.IS_SELECTING) {
-            return false; // Du hast schon ausgewählt!
+
+        System.out.println("Request von " +p.getName() + "(" + fireBaseToken + ")" + "will zu " + targetNodeId);
+        MakeMoveResponseBean responseBean = new MakeMoveResponseBean();
+
+
+        if(p.getPlayerState() == Player.PlayerState.IS_MOVING) {
+            responseBean.setSuccess(false);
+
+            System.out.println("War aber schon am bewegen!" + p.getPlayerState());
+            responseBean.setData("You've already selected. Move to your point.");
+            return responseBean; // Du hast schon ausgewählt!
         }
 
+        if(p.getPlayerState() == Player.PlayerState.IS_DONE) {
+            responseBean.setSuccess(false);
+            System.out.println("War aber schon fertig!" + p.getPlayerState());
+            responseBean.setData("You're already done.");
+            return responseBean; // Du hast schon ausgewählt!
+        }
+
+
         if(canReach(p,targetNodeId) && isFree(targetNodeId)) {
+            System.out.println(targetNodeId + " ist frei und erreichbar.");
             if(gpsEnabled) {
                 p.setPlayerState(Player.PlayerState.IS_MOVING);
                 p.setBoardPosition(targetNodeId);
                 notifyPlayerMoving(p);
             } else {
                 p.setPlayerState(Player.PlayerState.IS_DONE);
+                p.setBoardPosition(targetNodeId);
                 notifyPlayerDone(p);
+                advanceGameState();
             }
 
-            advanceGameState();
-            return true;
+            responseBean.setSuccess(true);
+            responseBean.setData("Alright, let's move to your position.");
+            return responseBean;
         }
-        return false;
+        responseBean.setSuccess(false);
+        responseBean.setData("CanReach:" +canReach(p,targetNodeId) + " IsFree:" + isFree(targetNodeId));
+        return responseBean;
     }
 
     public boolean updatePosition(String firebaseToken, Geolocation location) throws PlayerNotFoundException {
@@ -171,6 +194,7 @@ public class GameBoard {
                     .addRecipient(q.getFirebaseToken())
                     .setNotificationType(PushNotificationBuilder.PushNotificationType.GAME_POSITION_REACHED)
                     .addDataAttribute(PushNotificationBuilder.DataType.PLAYER_SELECT_ID, playerList.indexOf(p))
+                    .addDataAttribute(PushNotificationBuilder.DataType.PLAYER_SELECT_POSITION, p.getBoardPosition())
                     .push();
         }
     }
@@ -258,6 +282,9 @@ public class GameBoard {
 
     private void startPlayerTurn() {
         turnState = PLAYER_TURN;
+        for(Player p: playerList){
+            p.setPlayerState(Player.PlayerState.IS_SELECTING);
+        }
         notifyPlayerTurnStart();
     }
 
@@ -313,7 +340,7 @@ public class GameBoard {
 
         int size = graph.size();
         Player misterX = playerList.get(misterXId);
-        int randomNumber = new Random("Dennis".hashCode()).nextInt(size);
+        int randomNumber = new Random().nextInt(size);
         misterX.setBoardPosition(graph.get(randomNumber).getId());
 
         for(Player p : playerList) {
@@ -326,7 +353,8 @@ public class GameBoard {
 
     private void assignPlayerRandomPosition(Player p,ArrayList<Node> g) {
         int misterXPositionId = playerList.get(misterXId).getBoardPosition();
-        int randomNodeId = new Random("Dennis".hashCode()).nextInt(g.size());
+        int randomNodeId = new Random().nextInt(g.size());
+        System.out.println(randomNodeId);
         if(g.get(randomNodeId).hasNeighbour(misterXPositionId) || hasPlayerOnPosition(randomNodeId)) {
             assignPlayerRandomPosition(p,g);
         } else {

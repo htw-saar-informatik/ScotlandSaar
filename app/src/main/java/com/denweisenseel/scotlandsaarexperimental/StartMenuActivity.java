@@ -96,13 +96,13 @@ public class StartMenuActivity extends AppCompatActivity implements GamenameInpu
             @Override
             public void onResponse(JSONObject response) {
                 try {
-                    long gameId = response.getLong(getString(R.string.protocol_gameId));
+                    String gameId = response.getString(getString(R.string.protocol_gameId));
                     int id = response.getInt(getString(R.string.playerId));
-                    saveGameId(gameId);
                     savePlayerId(id);
                     Log.i(TAG, "Game created! ID: "+gameId);
                     Intent i = new Intent(StartMenuActivity.this, GameActivity.class);
                     i.putExtra(getString(R.string.host), true);
+                    i.putExtra(getString(R.string.gameId), gameId);
                     startActivity(i);
                     finish();
 

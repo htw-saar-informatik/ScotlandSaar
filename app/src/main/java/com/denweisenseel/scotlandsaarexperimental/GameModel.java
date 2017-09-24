@@ -13,14 +13,9 @@ import java.util.HashMap;
 
 public class GameModel {
 
-
-
     private HashMap<Integer, Marker> markerMap = new HashMap();
     private ArrayList<Player> playerList = new ArrayList<>();
-
-    public void setPlayerList(ArrayList<Player> playerList) {
-        this.playerList = playerList;
-    }
+    private int id;
 
     public void addMarker(int id, Marker m) {
         markerMap.put(id,m);
@@ -36,5 +31,13 @@ public class GameModel {
 
     public void addPlayer(Player p) {
         playerList.add(p);
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 }
