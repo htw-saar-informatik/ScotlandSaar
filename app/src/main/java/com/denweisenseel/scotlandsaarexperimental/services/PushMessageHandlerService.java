@@ -86,7 +86,7 @@ public class PushMessageHandlerService extends FirebaseMessagingService {
             } else if(m.get(getString(R.string.protocol_type)).equals(getString(R.string.GAME_REVEAL_X))) {
                 int misterXPos = Integer.valueOf(m.get(getString(R.string.MISTER_X_POSITION)));
                 Log.i(TAG, "Mister X revealed at " +misterXPos);
-                //TODO: Send information to activity, update map (Player  with id selected something)
+                sendMisterXUpdateToLobby(misterXPos);
             } else if(m.get(getString(R.string.protocol_type)).equals(getString(R.string.GAME_X_SURROUNDED))) {
                 int misterXPos = Integer.valueOf(m.get(getString(R.string.MISTER_X_POSITION)));
                 Log.i(TAG, "Mister X can't move anymore, revealed at " +misterXPos);
@@ -105,6 +105,12 @@ public class PushMessageHandlerService extends FirebaseMessagingService {
 
         // Also if you intend on generating your own notifications as a result of a received FCM
         // message, here is where that should be initiated. See sendNotification method below.
+    }
+
+    private void sendMisterXUpdateToLobby(int position) {
+        Intent i = new Intent(getString(R.string.GAME_REVEAL_X));
+        i.putExtra("boardPosition", position);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(i);
     }
 
     private void sendPlayerUpdateToLobby(String string, int playerId, int boardPosition) {

@@ -230,6 +230,11 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
+                } else if(intent.getAction().equals(getString(R.string.GAME_REVEAL_X))) {
+                    int misterXPos = intent.getIntExtra("boardPosition", -1);
+
+                    setMisterXMarker(misterXPos);
+
                 }
             }
         };
@@ -239,6 +244,7 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
         LocalBroadcastManager.getInstance(this).registerReceiver(gameStateReceiver, new IntentFilter(getString(R.string.GAME_TURN_START_X)));
         LocalBroadcastManager.getInstance(this).registerReceiver(gameStateReceiver, new IntentFilter(getString(R.string.TURN_START_PLAYER)));
         LocalBroadcastManager.getInstance(this).registerReceiver(gameStateReceiver, new IntentFilter(getString(R.string.GAME_POSITION_REACHED)));
+        LocalBroadcastManager.getInstance(this).registerReceiver(gameStateReceiver, new IntentFilter(getString(R.string.GAME_REVEAL_X)));
 
 
 
@@ -339,7 +345,6 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
                 public void onResponse(JSONObject response) {
                     try {
                         Log.i(TAG, "Started game" + response.toString());
-                        placePlayersOnMap();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -387,6 +392,8 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
     private void placePlayersOnMap() {
         graph = new Graph();
         graph.initialize(this, R.raw.graph);
+
+        gameModel.setGraph(graph);
 
         mapFragment.getMapAsync(new OnMapReadyCallback() {
             @Override
@@ -538,5 +545,21 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
 
     public void stopListening() {
         locationManager.removeUpdates(locationListener);
+    }
+
+    public void setMisterXMarker(final int misterXMarker) {
+        if(gameModel.getMisterXCircle() == null) {
+            mapFragment.getMapAsync(new OnMapReadyCallback() {
+                @Override
+                public void onMapReady(GoogleMap googleMap) {
+                    Circle c = googleMap.addCircle(new CircleOptions()
+                            .center(gameModel.getGraph().getNodeById(misterXMarker).getPosition())
+                            .fillColor(Color.CYAN).zIndex(5f).radius(20));
+                    gameModel.setMisterXCircle(c);
+                }
+            });
+        } else {
+            gameModel.getMisterXCircle().setCenter(gameModel.getGraph().getNodeById(misterXMarker).getPosition());
+        }
     }
 }

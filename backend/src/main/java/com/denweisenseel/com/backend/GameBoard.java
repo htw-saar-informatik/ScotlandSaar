@@ -244,8 +244,9 @@ public class GameBoard {
 
         turnCounter++;
 
-        if(turnCounter == 2 || turnCounter == 5 || turnCounter == 8) {
+        if(turnCounter == 3 || turnCounter == 6 || turnCounter == 9) {
             broadcastMisterXPosition();
+            System.out.println("Shown mister x Position");
         }
 
         if(canMisterXMove()) {

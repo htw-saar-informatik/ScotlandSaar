@@ -4,6 +4,8 @@ package com.denweisenseel.scotlandsaarexperimental.data;
 import android.util.Log;
 
 import com.denweisenseel.scotlandsaarexperimental.data.Player;
+import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.Marker;
 
 import java.util.ArrayList;
@@ -19,6 +21,8 @@ public class GameModel {
     private ArrayList<Player> playerList = new ArrayList<>();
     private int id;
     private boolean misterX;
+    private Graph graph;
+    private Circle misterXCircle;
 
     public void addMarker(int id, Marker m) {
         markerMap.put(id,m);
@@ -67,5 +71,22 @@ public class GameModel {
             if(p.isMisterX()) return p;
         }
         throw new Exception("Player not found");
+    }
+
+    public void setGraph(Graph graph) {
+        this.graph = graph;
+    }
+
+    public Graph getGraph() {
+        return graph;
+
+    }
+
+    public Circle getMisterXCircle() {
+        return misterXCircle;
+    }
+
+    public void setMisterXCircle(Circle misterXCircle) {
+        this.misterXCircle = misterXCircle;
     }
 }
