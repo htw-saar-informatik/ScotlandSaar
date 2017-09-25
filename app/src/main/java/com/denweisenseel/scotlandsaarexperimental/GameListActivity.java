@@ -118,8 +118,7 @@ public class GameListActivity extends AppCompatActivity {
     }
 
     private void fetchGameList() {
-        String noArgs[] = {}; //TODO Refactor this! its silly to pass a empty string array (1 hour)
-        JsonObjectRequest gameRequest = new JsonObjectRequest(Request.Method.GET, RequestBuilder.buildRequestUrl(RequestBuilder.GET_GAMELIST, noArgs ),null, new Response.Listener<JSONObject>() {
+        JsonObjectRequest gameRequest = new JsonObjectRequest(Request.Method.GET, RequestBuilder.buildRequestUrl(RequestBuilder.GET_GAMELIST),null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try {
