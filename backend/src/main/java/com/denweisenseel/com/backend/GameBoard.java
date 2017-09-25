@@ -185,7 +185,6 @@ public class GameBoard {
                 return true;
             }
         }
-
         return false;
     }
 

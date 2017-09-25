@@ -376,6 +376,7 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
             p.setName(player.getString("name"));
             p.setBoardPosition(player.getInt("boardPosition"));
             p.setId(player.getInt("id"));
+            p.setMisterX(player.getBoolean("misterX"));
             gameModel.addPlayer(p);
         }
 
@@ -428,12 +429,18 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
                         default:
                             color = Color.LTGRAY;
                     }
-
-                    Circle c = googleMap.addCircle(new CircleOptions()
-                            .center(gameModel.getMarker(p.getBoardPosition()).getPosition())
-                            .fillColor(color).zIndex(5f).radius(20));
-                    Log.i(TAG, "Added marker for:" + p.getName() + "to node Id " + p.getBoardPosition() + ". Location is:" + gameModel.getMarker(p.getBoardPosition()).getPosition());
-                    p.setMarker(c);
+                    if(p.isMisterX() && !gameModel.isMisterX()) {
+                        Circle c = googleMap.addCircle(new CircleOptions()
+                                .center(gameModel.getMarker(p.getBoardPosition()).getPosition())
+                                .fillColor(color).zIndex(5f).radius(20).visible(false));
+                        p.setMarker(c);
+                    } else {
+                        Circle c = googleMap.addCircle(new CircleOptions()
+                                .center(gameModel.getMarker(p.getBoardPosition()).getPosition())
+                                .fillColor(color).zIndex(5f).radius(20));
+                        Log.i(TAG, "Added marker for:" + p.getName() + "to node Id " + p.getBoardPosition() + ". Location is:" + gameModel.getMarker(p.getBoardPosition()).getPosition());
+                        p.setMarker(c);
+                    }
                 }
             }
         });
@@ -520,7 +527,7 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
             //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
             //                                          int[] grantResults)
             // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
+            // for ActivityCompat#requestPermissions for more details.CESS_COARSE_LOCATION}, 1001);
 
 
             return;

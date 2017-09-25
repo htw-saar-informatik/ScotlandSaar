@@ -61,4 +61,11 @@ public class GameModel {
     public void setMisterX(boolean misterX) {
         this.misterX = misterX;
     }
+
+    public Player getMisterXPlayer() throws Exception {
+        for(Player p : playerList) {
+            if(p.isMisterX()) return p;
+        }
+        throw new Exception("Player not found");
+    }
 }

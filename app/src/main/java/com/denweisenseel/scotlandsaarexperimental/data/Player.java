@@ -14,6 +14,7 @@ public class Player {
     private String name;
     private Circle marker;
     private int id;
+    private boolean misterX;
 
     public void setBoardPosition(int boardPosition) {
         this.boardPosition = boardPosition;
@@ -45,5 +46,13 @@ public class Player {
 
     public Circle getMarker() {
         return marker;
+    }
+
+    public void setMisterX(boolean misterX) {
+        this.misterX = misterX;
+    }
+
+    public boolean isMisterX() {
+        return misterX;
     }
 }
