@@ -8,6 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -34,6 +35,7 @@ public class StartMenuActivity extends AppCompatActivity implements GamenameInpu
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         progressOverlay = findViewById(R.id.progress_overlay);
         progressOverlay.setVisibility(View.GONE);
 
@@ -51,6 +53,8 @@ public class StartMenuActivity extends AppCompatActivity implements GamenameInpu
                 joinGame();
             }
         });
+
+
 
     }
 
@@ -90,6 +94,9 @@ public class StartMenuActivity extends AppCompatActivity implements GamenameInpu
 
     private void startGame() {
 
+        progressOverlay.setVisibility(View.VISIBLE);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
         String firebaseToken = FirebaseInstanceId.getInstance().getToken();
         String username = getSharedPreferences(getString(R.string.gameData),Context.MODE_PRIVATE).
                 getString(getString(R.string.username),"NULL");
@@ -109,6 +116,8 @@ public class StartMenuActivity extends AppCompatActivity implements GamenameInpu
                     i.putExtra(getString(R.string.host), true);
                     i.putExtra(getString(R.string.gameId), gameId);
                     startActivity(i);
+                    progressOverlay.setVisibility(View.GONE);
+                    getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
                     finish();
 
                 } catch (JSONException e) {
@@ -119,7 +128,11 @@ public class StartMenuActivity extends AppCompatActivity implements GamenameInpu
             @Override
             public void onErrorResponse(VolleyError error) {
                 Log.e(TAG, error.toString());
+
+                progressOverlay.setVisibility(View.GONE);
+                getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
             }
+
         });
 
         VolleyRequestQueue.getInstance(this).addToRequestQueue(gameRequest);
@@ -158,6 +171,8 @@ public class StartMenuActivity extends AppCompatActivity implements GamenameInpu
     public void onInput(String string) {
         gameName = string;
         progressOverlay.setVisibility(View.VISIBLE);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
         startGame();
     }
 }

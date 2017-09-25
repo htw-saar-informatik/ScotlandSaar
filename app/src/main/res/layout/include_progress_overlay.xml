@@ -7,7 +7,8 @@
     android:animateLayoutChanges="true"
     android:background="#303F9F"
     android:clickable="false"
-    android:visibility="gone">
+    android:visibility="gone"
+    android:translationZ="99dp">
 
     <ProgressBar
         android:id="@+id/progress_overlay_startMenu"
@@ -15,6 +16,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:indeterminate="true"/>
+        android:focusedByDefault="true"
+        android:translationZ="100dp"
+        android:indeterminate="true" />
 
 </FrameLayout>
