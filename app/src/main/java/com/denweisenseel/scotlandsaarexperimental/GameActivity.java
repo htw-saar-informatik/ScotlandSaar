@@ -233,7 +233,16 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
                     }
                 } else if (intent.getAction().equals(getString(R.string.GAME_WON))){
                     sendToChatFragment(new ChatDataParcelable("System", "Player WON", "Now"));
-                    DialogFragment newFragment = new GameEndedFragment();
+                    GameEndedFragment newFragment = new GameEndedFragment();
+                    newFragment.setMessage("Players won");
+                    FragmentManager fm = getFragmentManager();
+                    newFragment.show(fm, "game_ended");
+                }
+
+                else if (intent.getAction().equals(getString(R.string.GAME_LOST))){
+                    sendToChatFragment(new ChatDataParcelable("System", "Mr. X WON", "Now"));
+                    GameEndedFragment newFragment = new GameEndedFragment();
+                    newFragment.setMessage("Mr. X won");
                     FragmentManager fm = getFragmentManager();
                     newFragment.show(fm, "game_ended");
                 }
@@ -247,7 +256,7 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
         LocalBroadcastManager.getInstance(this).registerReceiver(gameStateReceiver, new IntentFilter(getString(R.string.GAME_POSITION_REACHED)));
 
         LocalBroadcastManager.getInstance(this).registerReceiver(gameStateReceiver, new IntentFilter(getString(R.string.GAME_WON)));
-        //LocalBroadcastManager.getInstance(this).registerReceiver(gameStateReceiver, new IntentFilter("MR_X_WON"));
+        LocalBroadcastManager.getInstance(this).registerReceiver(gameStateReceiver, new IntentFilter(getString(R.string.GAME_LOST)));
 
 
 

@@ -80,11 +80,10 @@ public class PushMessageHandlerService extends FirebaseMessagingService {
             } else if(m.get(getString(R.string.protocol_type)).equals(getString(R.string.GAME_WON))) {
                 Log.i(TAG, "Player caught Mister X");
                 sendGameEndedToLobby(getString(R.string.GAME_WON));
-                //TODO: Send information to activity, update map (Player  with id selected something)
 
             } else if(m.get(getString(R.string.protocol_type)).equals(getString(R.string.GAME_LOST))) {
                 Log.i(TAG, "Mister X won!");
-                //TODO: Send information to activity, update map (Player  with id selected something)
+                sendGameEndedToLobby(getString(R.string.GAME_LOST));
             } else if(m.get(getString(R.string.protocol_type)).equals(getString(R.string.GAME_REVEAL_X))) {
                 int misterXPos = Integer.valueOf(m.get(getString(R.string.MISTER_X_POSITION)));
                 Log.i(TAG, "Mister X revealed at " +misterXPos);
