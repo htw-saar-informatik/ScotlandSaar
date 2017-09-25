@@ -6,8 +6,13 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
@@ -38,6 +43,8 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
@@ -74,19 +81,28 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
 
     private SupportMapFragment mapFragment;
     private BroadcastReceiver gameStateReceiver;
-    private  DashboardFragment dashboardFragment;
+    private DashboardFragment dashboardFragment;
 
     GameModel gameModel = new GameModel();
+
+    //GPS
+    LocationListener locationListener;
+    LocationManager locationManager;
 
 
     private String TAG = "GameActivity";
     private GoogleMap map;
+
+    private Graph graph;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
+
+        locationListener = new GameLocationListener(this);
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
         isHost = getIntent().getBooleanExtra(getString(R.string.host), false);
         gameId = getIntent().getStringExtra(getString(R.string.gameId));
@@ -106,7 +122,6 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
 
         dashboardFragment = DashboardFragment.newInstance("null", "null");
         bottomBarAdapter.addFragments(dashboardFragment);
-
 
 
         pager.setAdapter(bottomBarAdapter);
@@ -194,12 +209,26 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
             public void onReceive(Context context, Intent intent) {
                 if (intent.getAction().equals(getString(R.string.LOBBY_GAME_START))) {
                     String args = intent.getStringExtra(getString(R.string.BROADCAST_DATA));
-                    populateMap(args);
+                    try {
+                        populateGameModel(args);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
                     navigation.enableItemAtPosition(0);
-                } else if(intent.getAction().equals(getString(R.string.GAME_TURN_START_X))) {
+                } else if (intent.getAction().equals(getString(R.string.GAME_TURN_START_X))) {
                     setNotification("Mister X ist an der Reihe!");
-                } else if(intent.getAction().equals(getString(R.string.TURN_START_PLAYER))) {
+                } else if (intent.getAction().equals(getString(R.string.TURN_START_PLAYER))) {
                     setNotification("Spieler sind an der Reihe!");
+                } else if (intent.getAction().equals(getString(R.string.GAME_POSITION_REACHED))) {
+                    int playerId = intent.getIntExtra("playerId", -1);
+                    int boardPosition = intent.getIntExtra("boardPosition", -1);
+                    Log.v(TAG, "Updating playerPosition");
+
+                    try {
+                        gameModel.getPlayerById(playerId).getMarker().setCenter(graph.getNodeById(boardPosition).getPosition());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         };
@@ -208,10 +237,11 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
         LocalBroadcastManager.getInstance(this).registerReceiver(gameStateReceiver, new IntentFilter(getString(R.string.LOBBY_GAME_START)));
         LocalBroadcastManager.getInstance(this).registerReceiver(gameStateReceiver, new IntentFilter(getString(R.string.GAME_TURN_START_X)));
         LocalBroadcastManager.getInstance(this).registerReceiver(gameStateReceiver, new IntentFilter(getString(R.string.TURN_START_PLAYER)));
+        LocalBroadcastManager.getInstance(this).registerReceiver(gameStateReceiver, new IntentFilter(getString(R.string.GAME_POSITION_REACHED)));
 
 
 
-        int id = getSharedPreferences(getString(R.string.gameData),Context.MODE_PRIVATE).getInt(getString(R.string.playerId), -1);
+        int id = getSharedPreferences(getString(R.string.gameData), Context.MODE_PRIVATE).getInt(getString(R.string.playerId), -1);
         Toast.makeText(this, String.valueOf(id), Toast.LENGTH_SHORT).show();
     }
 
@@ -238,11 +268,11 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
             ArrayList<String> playersInLobby = getIntent().getStringArrayListExtra("players");
             ArrayList<ChatDataParcelable> chatMessages = new ArrayList<ChatDataParcelable>();
 
-            for (int i = 0; i < playersInLobby.size(); i++){
+            for (int i = 0; i < playersInLobby.size(); i++) {
                 chatMessages.add(new ChatDataParcelable("System", playersInLobby.get(i) + " is in the lobby", new SimpleDateFormat("HH.mm").format(new Date())));
             }
 
-            for (int i = 0; i < chatMessages.size(); i++){
+            for (int i = 0; i < chatMessages.size(); i++) {
                 sendToChatFragment(chatMessages.get(i));
             }
             Log.i(TAG, "Printet all players in the lobby into the chat");
@@ -268,13 +298,13 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
         googleMap.setLatLngBoundsForCameraTarget(bounds);
 
         googleMap.moveCamera(CameraUpdateFactory.newLatLng(CAMERA_POSITION));
-        googleMap.animateCamera(CameraUpdateFactory.zoomTo( ZOOM_FACTOR ) );
+        googleMap.animateCamera(CameraUpdateFactory.zoomTo(ZOOM_FACTOR));
 
         googleMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
                 try {
-                    if(marker.getTag() != null) makeMove((Integer) marker.getTag());
+                    if (marker.getTag() != null) makeMove((Integer) marker.getTag());
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -287,13 +317,11 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
             public void onCameraMove() {
                 float minZoom = ZOOM_FACTOR;
                 CameraPosition cameraPosition = googleMap.getCameraPosition();
-                if(cameraPosition.zoom <minZoom) {
+                if (cameraPosition.zoom < minZoom) {
                     googleMap.animateCamera(CameraUpdateFactory.zoomTo(minZoom));
                 }
             }
         });
-
-
     }
 
 
@@ -324,7 +352,7 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
 
             VolleyRequestQueue.getInstance(this).addToRequestQueue(gameRequest);
         } else {
-            Toast.makeText(this,R.string.ERROR_START, Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.ERROR_START, Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -333,62 +361,80 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
         makeMove(10);
     }
 
-    private void populateMap(String input) {
+    private void populateGameModel(String input) throws JSONException {
 
-        JSONObject json = null;
-        try {
-            json = new JSONObject(input);
-            JSONObject gameState = json.getJSONObject("gameState");
-            JSONArray playerArray = gameState.getJSONArray("playerList");
-            Log.i("DIES", String.valueOf(playerArray.length()));
+        JSONObject json = new JSONObject(input);
+        gameModel.setMisterX(json.getBoolean("isMisterX"));
 
-            for(int i = 0; i < playerArray.length(); i++) {
-                JSONObject player = playerArray.getJSONObject(i);
-                Player p = new Player();
-                p.setName(player.getString("name"));
-                p.setBoardPosition(player.getInt("boardPosition"));
-                gameModel.addPlayer(p);
-                Log.i("DIES", String.valueOf(gameModel.getPlayerList().size()));
-            }
+        JSONObject gameState = json.getJSONObject("gameState");
+        JSONArray playerArray = gameState.getJSONArray("playerList");
 
-        } catch (JSONException e) {
-            e.printStackTrace();
+        for (int i = 0; i < playerArray.length(); i++) {
+            JSONObject player = playerArray.getJSONObject(i);
+            Player p = new Player();
+            p.setName(player.getString("name"));
+            p.setBoardPosition(player.getInt("boardPosition"));
+            p.setId(player.getInt("id"));
+            gameModel.addPlayer(p);
         }
-
-        Log.i(TAG + "TEST", json.toString());
 
         placePlayersOnMap();
 
     }
 
     private void placePlayersOnMap() {
-        final Graph graph = new Graph();
+        graph = new Graph();
         graph.initialize(this, R.raw.graph);
 
         mapFragment.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(GoogleMap googleMap) {
-                for(Graph.Node n : graph.getNodes()) {
-                    Log.v(TAG, "Adding Marker" + n.getId());
+                for (Graph.Node n : graph.getNodes()) {
                     Marker m = googleMap.addMarker(new MarkerOptions().position(n.getPosition()).title(String.valueOf(n.getId())));
                     m.setTag(n.getId());
                     gameModel.addMarker(n.getId(), m);
 
 
-                };
+                }
 
-                for(Graph.Node n : graph.getNodes()) {
-                    for(Integer i : n.getNeighbours()) {
+                for (Graph.Node n : graph.getNodes()) {
+                    for (Integer i : n.getNeighbours()) {
                         googleMap.addPolyline(new PolylineOptions().add(n.getPosition(), gameModel.getMarker(i).getPosition()));
                     }
                 }
 
-                for(Player p : gameModel.getPlayerList()) {
-                    Marker m = googleMap.addMarker(new MarkerOptions()
-                            .position(gameModel.getMarker(p.getBoardPosition()).getPosition())
-                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)));
-                    Log.i(TAG, "Added marker for:" + p.getName() + "to node Id " + p.getBoardPosition() + ". Location is:" +gameModel.getMarker(p.getBoardPosition()).getPosition());
-                    p.setMarker(m);
+                for (Player p : gameModel.getPlayerList()) {
+
+                    int id = gameModel.getPlayerList().indexOf(p);
+
+                    int color;
+
+                    switch(id) {
+                        case 0: color = Color.BLACK;
+                            break;
+                        case 1: color = Color.GREEN;
+                            break;
+                        case 2:
+                            color = Color.MAGENTA;
+                            break;
+                        case 3:
+                            color = Color.RED;
+                            break;
+                        case 4:
+                            color = Color.YELLOW;
+                            break;
+                        case 5:
+                            color = Color.BLUE;
+                            break;
+                        default:
+                            color = Color.LTGRAY;
+                    }
+
+                    Circle c = googleMap.addCircle(new CircleOptions()
+                            .center(gameModel.getMarker(p.getBoardPosition()).getPosition())
+                            .fillColor(color).zIndex(5f).radius(20));
+                    Log.i(TAG, "Added marker for:" + p.getName() + "to node Id " + p.getBoardPosition() + ". Location is:" + gameModel.getMarker(p.getBoardPosition()).getPosition());
+                    p.setMarker(c);
                 }
             }
         });
@@ -397,13 +443,20 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
     private boolean makeMove(int targetPosition) {
         String firebaseToken = FirebaseInstanceId.getInstance().getToken();
 
-        String[] requestARGS = new String[] {gameId,firebaseToken,String.valueOf(targetPosition)};
+        final String[] requestARGS = new String[]{gameId, firebaseToken, String.valueOf(targetPosition)};
 
         JsonObjectRequest gameRequest = new JsonObjectRequest(Request.Method.POST, RequestBuilder.
-                buildRequestUrl(RequestBuilder.MAKE_MOVE, requestARGS),null, new Response.Listener<JSONObject>() {
+                buildRequestUrl(RequestBuilder.MAKE_MOVE, requestARGS), null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 Log.v(TAG, response.toString());
+                try {
+                    if(response.getBoolean("success") && gameModel.isMisterX()) {
+                        gameModel.getPlayerById(gameModel.getId()).getMarker().setCenter(graph.getNodeById(response.getInt("positionId")).getPosition());
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
 
             }
         }, new Response.ErrorListener() {
@@ -432,11 +485,52 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
 
     @Override
     public void gpsDeactivated(String s) {
-
+        //TODO Show dialog that GPS is needed. Ask for activation. If declined, quit game
     }
 
     @Override
     public void updatePosition(Location location) {
 
+        String firebaseToken = FirebaseInstanceId.getInstance().getToken();
+        String latitude = String.valueOf(location.getLatitude());
+        String longitude = String.valueOf(location.getLongitude());
+
+        String[] requestARGS = new String[]{gameId, firebaseToken, latitude, longitude};
+
+        JsonObjectRequest gameRequest = new JsonObjectRequest(Request.Method.POST, RequestBuilder.
+                buildRequestUrl(RequestBuilder.UPDATE_POSITION, requestARGS), null, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                Log.v(TAG, response.toString());
+
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e(TAG, error.toString());
+            }
+        });
+
+        VolleyRequestQueue.getInstance(this).addToRequestQueue(gameRequest);
+    }
+
+    public void listenForUpdates() {
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+
+
+            return;
+        }
+
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 10, locationListener);
+    }
+
+    public void stopListening() {
+        locationManager.removeUpdates(locationListener);
     }
 }

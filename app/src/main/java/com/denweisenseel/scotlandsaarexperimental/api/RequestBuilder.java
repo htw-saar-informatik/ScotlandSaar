@@ -27,6 +27,9 @@ public class RequestBuilder {
     public static final int MAKE_MOVE = 0x05;
     private static final String MAKE_MOVE_FUNCTION = "makeMove";
 
+    public static final int UPDATE_POSITION = 0x06;
+    private static final String UPDATE_POSITION_FUNCTION = "updatePosition";
+
     public static String buildRequestUrl(int requestType){
         StringBuilder builder = new StringBuilder();
         builder.append(buildBasicRequestUrl(requestType));
@@ -67,6 +70,9 @@ public class RequestBuilder {
                 break;
             case MAKE_MOVE:
                 builder.append(MAKE_MOVE_FUNCTION);
+                break;
+            case UPDATE_POSITION:
+                builder.append(UPDATE_POSITION_FUNCTION);
                 break;
         }
 

@@ -109,21 +109,6 @@ public class ScotlandSaarGameEndpoint {
         return response;
     }
 
-
-    @ApiMethod(name = "updatePosition")
-    public ResponseBean updatePosition(@Named("id") long id,@Named("fireBaseToken") String fireBaseToken, Geolocation geolocation) throws PlayerNotFoundException {
-
-        GameBoard gameBoard = ofy().load().type(GameBoard.class).id(id).now();
-        boolean success = gameBoard.updatePosition(fireBaseToken,geolocation);
-        ofy().save().entity(gameBoard).now();
-
-        ResponseBean response = new ResponseBean();
-        System.out.println(gameBoard.getPlayerList().size());
-        response.setSuccess(success);
-
-        return response;
-    }
-
     @ApiMethod(name = "gameList")
     public ArrayList<GameListBean> getGameList() {
 
@@ -144,10 +129,6 @@ public class ScotlandSaarGameEndpoint {
         }
         return gameList;
     }
-
-
-
-
 
     @ApiMethod(name = "sendChatMessage")
     public ResponseBean sendChatMessage(@Named("id") long id, @Named("fireBaseToken") String token, @Named("message") String message) throws PlayerNotFoundException {
@@ -171,13 +152,29 @@ public class ScotlandSaarGameEndpoint {
     @ApiMethod(name = "makeMove")
     public MakeMoveResponseBean makeMove(@Named("id") long id, @Named("fireBaseToken") String token, @Named("targetPosition") int targetPosition) throws PlayerNotFoundException {
         GameBoard board = ofy().load().type(GameBoard.class).id(id).now();
-        MakeMoveResponseBean bean = new MakeMoveResponseBean();
+        MakeMoveResponseBean bean;
 
         bean =  board.makeMove(token, targetPosition);
         ofy().save().entity(board).now();
 
 
         return bean;
+    }
+
+    @ApiMethod(name = "updatePosition")
+    public ResponseBean updatePosition(@Named("id") long id, @Named("fireBaseToken") String token, @Named("latitude") double latitude, @Named("longitude") double longitude) throws PlayerNotFoundException {
+
+        GameBoard gameBoard = ofy().load().type(GameBoard.class).id(id).now();
+        Geolocation geolocation = new Geolocation(latitude,longitude);
+        boolean success = gameBoard.updatePosition(token,geolocation);
+        ofy().save().entity(gameBoard).now();
+
+        ResponseBean response = new ResponseBean();
+        System.out.println(gameBoard.getPlayerList().size());
+        response.setSuccess(success);
+
+
+        return response;
     }
 
 

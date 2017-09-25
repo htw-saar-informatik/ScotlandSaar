@@ -1,6 +1,8 @@
 package com.denweisenseel.scotlandsaarexperimental;
 
 
+import android.util.Log;
+
 import com.denweisenseel.scotlandsaarexperimental.data.Player;
 import com.google.android.gms.maps.model.Marker;
 
@@ -16,6 +18,7 @@ public class GameModel {
     private HashMap<Integer, Marker> markerMap = new HashMap();
     private ArrayList<Player> playerList = new ArrayList<>();
     private int id;
+    private boolean misterX;
 
     public void addMarker(int id, Marker m) {
         markerMap.put(id,m);
@@ -39,5 +42,23 @@ public class GameModel {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public Player getPlayerById(int playerId) throws Exception {
+        for(Player p : playerList) {
+            Log.v("PLAYERLOGGING", String.valueOf(p.getId()) + "   "  + playerId);
+            if(p.getId() == playerId) {
+                return p;
+            }
+        }
+        throw new Exception("NO PLAYERID" + id);
+    }
+
+    public boolean isMisterX() {
+        return misterX;
+    }
+
+    public void setMisterX(boolean misterX) {
+        this.misterX = misterX;
     }
 }

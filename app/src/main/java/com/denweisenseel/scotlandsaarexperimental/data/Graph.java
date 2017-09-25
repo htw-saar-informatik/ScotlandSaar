@@ -79,6 +79,13 @@ public class Graph {
         return nodes;
     }
 
+    public Node getNodeById(int i) {
+        for(Node n : nodes) {
+            if(n.getId() == i) return n;
+        }
+        return null;
+    }
+
 
     public class Node {
 

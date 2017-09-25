@@ -58,6 +58,9 @@ public class StartMenuActivity extends AppCompatActivity implements GamenameInpu
     protected void onStart() {
         SharedPreferences sharedPref = this.getSharedPreferences(getString(R.string.gameData),Context.MODE_PRIVATE);
 
+        //TODO Check for Username, Check for Permissions (GPS, FileSystem), Check for exisiting variables, delete them if unnecessary
+
+
         if(sharedPref.contains(getString(R.string.username))) {
             Toast.makeText(this, "Hallo " +sharedPref.getString(getString(R.string.username), "NULL"),Toast.LENGTH_SHORT).show();;
         } else {
@@ -70,6 +73,8 @@ public class StartMenuActivity extends AppCompatActivity implements GamenameInpu
             sharedPref.edit().remove(getString(R.string.gameId));
             //TODO check if game is still alive, rejoin! @Issue 001 (10 Hours)
         }
+
+        //TODO move those checks into functions, -> checkUsername() -> Callback to checkPermissions -> Callback to var checks!
 
         super.onStart();
     }

@@ -16,6 +16,7 @@ public class PlayerBean {
     private Player.PlayerState playerState;
     private boolean owner;
     private boolean misterX;
+    private int id;
 
 
     public PlayerBean(Player p) {
@@ -26,6 +27,7 @@ public class PlayerBean {
         playerState = p.getPlayerState();
         owner = p.isOwner();
         misterX = p.isMisterX();
+        id = p.getId();
     };
 
 
@@ -83,5 +85,13 @@ public class PlayerBean {
 
     public void setMisterX(boolean misterX) {
         this.misterX = misterX;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 }

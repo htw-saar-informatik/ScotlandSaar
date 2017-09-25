@@ -8,6 +8,7 @@ public class MakeMoveResponseBean {
 
     boolean success;
     String  data;
+    private int positionId;
 
     public boolean isSuccess() {
         return success;
@@ -24,4 +25,14 @@ public class MakeMoveResponseBean {
     public void setData(String data) {
         this.data = data;
     }
+
+    public void setPositionId(int positionId) {
+        this.positionId = positionId;
+    }
+
+    public int getPositionId() {
+        return positionId;
+    }
+
+
 }

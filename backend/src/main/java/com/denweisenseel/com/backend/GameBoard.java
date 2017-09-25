@@ -114,10 +114,10 @@ public class GameBoard {
         playerList.get(misterX).setIsMisterX(true);
 
         //PLACE players
-
         assignRandomPositions();
         //SEND game data
         notifyPlayerGameStart();
+
 
         startMisterXTurn();
 
@@ -132,7 +132,7 @@ public class GameBoard {
         Player p = getPlayerByFirebaseToken(fireBaseToken);
 
 
-        System.out.println("Request von " +p.getName() + "(" + fireBaseToken + ")" + "will zu " + targetNodeId);
+        System.out.println("Request von " +p.getName() + "will zu " + targetNodeId);
         MakeMoveResponseBean responseBean = new MakeMoveResponseBean();
 
 
@@ -151,7 +151,6 @@ public class GameBoard {
             return responseBean; // Du hast schon ausgewählt!
         }
 
-
         if(canReach(p,targetNodeId) && isFree(targetNodeId)) {
             System.out.println(targetNodeId + " ist frei und erreichbar.");
             if(gpsEnabled) {
@@ -167,6 +166,7 @@ public class GameBoard {
 
             responseBean.setSuccess(true);
             responseBean.setData("Alright, let's move to your position.");
+            responseBean.setPositionId(targetNodeId);
             return responseBean;
         }
         responseBean.setSuccess(false);
@@ -181,22 +181,12 @@ public class GameBoard {
         if(p.getPlayerState() == Player.PlayerState.IS_MOVING) {
             if (GraphBuilder.getGraph().get(p.getBoardPosition()).getLocation().distanceBetweenGeolocationInMetres(location) < 20) {
                 p.setPlayerState(Player.PlayerState.IS_DONE);
+                notifyPlayerDone(p);
                 return true;
             }
         }
 
         return false;
-    }
-
-    private void notifyPlayerDone(Player p) {
-        for(Player q : playerList) {
-            new PushNotificationBuilder()
-                    .addRecipient(q.getFirebaseToken())
-                    .setNotificationType(PushNotificationBuilder.PushNotificationType.GAME_POSITION_REACHED)
-                    .addDataAttribute(PushNotificationBuilder.DataType.PLAYER_SELECT_ID, playerList.indexOf(p))
-                    .addDataAttribute(PushNotificationBuilder.DataType.PLAYER_SELECT_POSITION, p.getBoardPosition())
-                    .push();
-        }
     }
 
     private boolean canMisterXMove() {
@@ -229,73 +219,25 @@ public class GameBoard {
     private void advanceGameState() {
         if(turnState == X_TURN) {
             if(playerList.get(misterXId).getPlayerState() == Player.PlayerState.IS_DONE) {
+                turnState = PLAYER_TURN;
                 startPlayerTurn();
             }
         } else {
             if(allPlayersAreDone()) {
-                if(gameWon) {
+                if(isMisterXCaught()) {
                     notifyPlayerGameWon();
+                    finishGame();
                 } else if(turnCounter >= 12) {
                     notifyPlayerGameLost();
-                }
-                startMisterXTurn();
+                } else { startMisterXTurn(); };
             }
         }
     }
 
-
-    private void notifyPlayerMoving(Player p) {
-        for(Player q : playerList) {
-            new PushNotificationBuilder()
-                    .addRecipient(q.getFirebaseToken())
-                    .setNotificationType(PushNotificationBuilder.PushNotificationType.GAME_POSITION_SELECTED)
-                    .addDataAttribute(PushNotificationBuilder.DataType.PLAYER_SELECT_POSITION, p.getBoardPosition())
-                    .addDataAttribute(PushNotificationBuilder.DataType.PLAYER_SELECT_ID, playerList.indexOf(p))
-                    .push();
-        }
+    private void finishGame() {
+        gameState = GAMESTATE_OVER;
     }
 
-    private void notifyPlayerGameLost() {
-        for(Player q : playerList) {
-            new PushNotificationBuilder()
-                    .addRecipient(q.getFirebaseToken())
-                    .setNotificationType(PushNotificationBuilder.PushNotificationType.GAME_LOST)
-                    .push();
-        }
-    }
-
-    private void notifyPlayerGameWon() {
-        for(Player q : playerList) {
-            new PushNotificationBuilder()
-                    .addRecipient(q.getFirebaseToken())
-                    .setNotificationType(PushNotificationBuilder.PushNotificationType.GAME_WON)
-                    .push();
-        }
-    }
-
-    private boolean allPlayersAreDone() {
-        for(Player p : playerList) {
-            if(p.getPlayerState() != Player.PlayerState.IS_DONE) return false;
-        }
-        return true;
-    }
-
-    private void startPlayerTurn() {
-        turnState = PLAYER_TURN;
-        for(Player p: playerList){
-            p.setPlayerState(Player.PlayerState.IS_SELECTING);
-        }
-        notifyPlayerTurnStart();
-    }
-
-    private void notifyPlayerTurnStart() {
-        for(Player q : playerList) {
-            new PushNotificationBuilder()
-                    .addRecipient(q.getFirebaseToken())
-                    .setNotificationType(PushNotificationBuilder.PushNotificationType.GAME_TURN_START_PLAYER)
-                    .push();
-        }
-    }
 
     private void startMisterXTurn() {
         playerList.get(misterXId).setPlayerState(Player.PlayerState.IS_SELECTING);
@@ -314,24 +256,22 @@ public class GameBoard {
         }
     }
 
-    private void notifyMisterXSurrounded() {
-        for(Player q : playerList) {
-            new PushNotificationBuilder()
-                    .addRecipient(q.getFirebaseToken())
-                    .setNotificationType(PushNotificationBuilder.PushNotificationType.GAME_X_SURROUNDED)
-                    .addDataAttribute(PushNotificationBuilder.DataType.MISTER_X_POSITION, playerList.get(misterXId).getBoardPosition())
-                    .push();
+
+    private boolean allPlayersAreDone() {
+        for(Player p : playerList) {
+            if(!p.isMisterX()) {
+                if(p.getPlayerState() != Player.PlayerState.IS_DONE) return false;
+            }
         }
+        return true;
     }
 
-    private void broadcastMisterXPosition() {
-        for(Player q : playerList) {
-            new PushNotificationBuilder()
-                        .addRecipient(q.getFirebaseToken())
-                        .setNotificationType(PushNotificationBuilder.PushNotificationType.GAME_REVEAL_X)
-                        .addDataAttribute(PushNotificationBuilder.DataType.MISTER_X_POSITION, playerList.get(misterXId).getBoardPosition())
-                        .push();
+    private void startPlayerTurn() {
+
+        for(Player p: playerList){
+            p.setPlayerState(Player.PlayerState.IS_SELECTING);
         }
+        notifyPlayerTurnStart();
     }
 
 
@@ -386,6 +326,147 @@ public class GameBoard {
         return playerList.remove(p);
     }
 
+
+
+
+    private Player getPlayerByFirebaseToken(String firebaseToken) throws PlayerNotFoundException {
+        for(Player p : playerList) {
+            if(p.getFirebaseToken().equals(firebaseToken)) return p;
+        }
+        throw new PlayerNotFoundException("Player with fireBaseToken"+ firebaseToken +" was not found");
+    }
+
+    public GameStateBean getGameState(boolean misterX) {
+        GameStateBean gsb = new GameStateBean();
+
+        for(Player p : playerList) {
+           gsb.addPlayer(p);
+        }
+
+        gsb.setGameState(gameState);
+        gsb.setGameWon(gameWon);
+        gsb.setTurnCounter(turnCounter);
+        gsb.setTurnState(turnState);
+
+        return gsb;
+    }
+
+    public String getGameStateAsJson(boolean misterX) {
+        String object = new Gson().toJson(getGameState(misterX));
+        return object;
+    }
+
+    public byte getGameState() {
+        return gameState;
+    }
+
+
+    public ArrayList<Player> getPlayerList() {
+        return playerList;
+    }
+
+    public String getName() {
+        return gameName;
+    }
+
+    public String getCreator() {
+        return creatorName;
+    }
+
+
+    //TODO: Derzeit eine Methode für alle Pushnotification, folgendes Muster wollen wir aber :
+    // notfyPlayer(Wen?, Was?)
+    // Wen: Alle, Alle außer einem, Nur Mister X, Alles außer Mister X, Einen
+    // Was: new DataField().addValue(TYPE, value).addValue(TYPE, value;
+
+
+    public void sendChatMessage(String token, String message) throws PlayerNotFoundException {
+        Player p = getPlayerByFirebaseToken(token);
+
+        for(Player e : playerList) {
+                new PushNotificationBuilder()
+                        .addRecipient(e.getFirebaseToken())
+                        .setNotificationType(PushNotificationBuilder.PushNotificationType.LOBBY_PLAYER_MESSAGE)
+                        .addDataAttribute(PushNotificationBuilder.DataType.PLAYER_MESSAGE, message)
+                        .addDataAttribute(PushNotificationBuilder.DataType.PLAYER_NAME, p.getName())
+                        .addDataAttribute(PushNotificationBuilder.DataType.TIME_STAMP, new SimpleDateFormat("HH.mm").format(new Date()))
+                        .push();
+
+        }
+    }
+
+    private void notifyPlayerDone(Player p) {
+        for(Player q : playerList) {
+            new PushNotificationBuilder()
+                    .addRecipient(q.getFirebaseToken())
+                    .setNotificationType(PushNotificationBuilder.PushNotificationType.GAME_POSITION_REACHED)
+                    .addDataAttribute(PushNotificationBuilder.DataType.PLAYER_SELECT_ID, playerList.indexOf(p))
+                    .addDataAttribute(PushNotificationBuilder.DataType.PLAYER_SELECT_POSITION, p.getBoardPosition())
+                    .push();
+        }
+    }
+
+    private void notifyPlayerMoving(Player p) {
+        for(Player q : playerList) {
+            new PushNotificationBuilder()
+                    .addRecipient(q.getFirebaseToken())
+                    .setNotificationType(PushNotificationBuilder.PushNotificationType.GAME_POSITION_SELECTED)
+                    .addDataAttribute(PushNotificationBuilder.DataType.PLAYER_SELECT_POSITION, p.getBoardPosition())
+                    .addDataAttribute(PushNotificationBuilder.DataType.PLAYER_SELECT_ID, playerList.indexOf(p))
+                    .push();
+        }
+    }
+
+    private void notifyPlayerGameLost() {
+        for(Player q : playerList) {
+            new PushNotificationBuilder()
+                    .addRecipient(q.getFirebaseToken())
+                    .setNotificationType(PushNotificationBuilder.PushNotificationType.GAME_LOST)
+                    .push();
+        }
+    }
+
+    private void notifyPlayerGameWon() {
+        for(Player q : playerList) {
+            new PushNotificationBuilder()
+                    .addRecipient(q.getFirebaseToken())
+                    .setNotificationType(PushNotificationBuilder.PushNotificationType.GAME_WON)
+                    .push();
+        }
+    }
+
+    private void notifyPlayerTurnStart() {
+        for(Player q : playerList) {
+            new PushNotificationBuilder()
+                    .addRecipient(q.getFirebaseToken())
+                    .setNotificationType(PushNotificationBuilder.PushNotificationType.GAME_TURN_START_PLAYER)
+                    .push();
+        }
+    }
+
+
+    private void notifyMisterXSurrounded() {
+        for(Player q : playerList) {
+            new PushNotificationBuilder()
+                    .addRecipient(q.getFirebaseToken())
+                    .setNotificationType(PushNotificationBuilder.PushNotificationType.GAME_X_SURROUNDED)
+                    .addDataAttribute(PushNotificationBuilder.DataType.MISTER_X_POSITION, playerList.get(misterXId).getBoardPosition())
+                    .push();
+        }
+    }
+
+    private void broadcastMisterXPosition() {
+        for(Player q : playerList) {
+            new PushNotificationBuilder()
+                    .addRecipient(q.getFirebaseToken())
+                    .setNotificationType(PushNotificationBuilder.PushNotificationType.GAME_REVEAL_X)
+                    .addDataAttribute(PushNotificationBuilder.DataType.MISTER_X_POSITION, playerList.get(misterXId).getBoardPosition())
+                    .push();
+        }
+    }
+
+
+
     private void notifyPlayerGameStart() {
         for(Player q : playerList) {
             new PushNotificationBuilder()
@@ -430,81 +511,17 @@ public class GameBoard {
         }
     }
 
-    private Player getPlayerByFirebaseToken(String firebaseToken) throws PlayerNotFoundException {
-        for(Player p : playerList) {
-            if(p.getFirebaseToken().equals(firebaseToken)) return p;
-        }
-        throw new PlayerNotFoundException("Player with fireBaseToken"+ firebaseToken +" was not found");
-    }
-
-    public GameStateBean getGameState(boolean misterX) {
-        GameStateBean gsb = new GameStateBean();
-
-        //Add players!
-
-        for(Player p : playerList) {
-            if((p.isMisterX() && misterX) || p.isMisterX() && xRevealed) {
-                gsb.addPlayer(p);
-            } else {
-                if(!p.isMisterX()) {
-                    gsb.addPlayer(p);
+    public boolean isMisterXCaught() {
+        System.out.println("Comparing stuff");
+        Player p = playerList.get(misterXId);
+        for(Player q : playerList) {
+            if(!q.isMisterX()) {
+                if(q.getBoardPosition() == p.getBoardPosition()) {
+                    gameWon = true;
+                    return gameWon;
                 }
             }
         }
-
-        gsb.setGameState(gameState);
-        gsb.setGameWon(gameWon);
-        gsb.setTurnCounter(turnCounter);
-        gsb.setTurnState(turnState);
-
-        return gsb;
-    }
-
-    public String getGameStateAsJson(boolean misterX) {
-
-        String object = new Gson().toJson(getGameState(misterX));
-        return object;
-
-    }
-
-    public byte getGameState() {
-        return gameState;
-    }
-
-
-    public ArrayList<Player> getPlayerList() {
-        return playerList;
-    }
-
-    public String getName() {
-        return gameName;
-    }
-
-    public String getCreator() {
-        return creatorName;
-    }
-
-    public void sendChatMessage(String token, String message) throws PlayerNotFoundException {
-        Player p = getPlayerByFirebaseToken(token);
-
-        for(Player e : playerList) {
-            if(gameState == GAMESTATE_SETUP) {
-                new PushNotificationBuilder()
-                        .addRecipient(e.getFirebaseToken())
-                        .setNotificationType(PushNotificationBuilder.PushNotificationType.LOBBY_PLAYER_MESSAGE)
-                        .addDataAttribute(PushNotificationBuilder.DataType.PLAYER_MESSAGE, message)
-                        .addDataAttribute(PushNotificationBuilder.DataType.PLAYER_NAME, p.getName())
-                        .addDataAttribute(PushNotificationBuilder.DataType.TIME_STAMP, new SimpleDateFormat("HH.mm").format(new Date()))
-                        .push();
-            } else {
-                new PushNotificationBuilder()
-                        .addRecipient(e.getFirebaseToken())
-                        .setNotificationType(PushNotificationBuilder.PushNotificationType.CHAT_NEW_MESSAGE)
-                        .addDataAttribute(PushNotificationBuilder.DataType.PLAYER_MESSAGE, message)
-                        .addDataAttribute(PushNotificationBuilder.DataType.PLAYER_NAME, p.getName())
-                        .addDataAttribute(PushNotificationBuilder.DataType.TIME_STAMP, new SimpleDateFormat("HH.mm").format(new Date()))
-                        .push();
-            }
-        }
+        return gameWon;
     }
 }

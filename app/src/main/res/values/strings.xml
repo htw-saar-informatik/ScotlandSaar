@@ -50,6 +50,7 @@
     <string name="SCOTLANDSAAR">ScottlandSaar</string>
     <string name="TURN_START_PLAYER">TURN_START_PLAYER</string>
     <string name="GAME_YOU_MISTERX">YOU_MISTER_X</string>
+    <string name="MISTER_X_POSITION">xPosition</string>
 
 
 </resources>

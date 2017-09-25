@@ -1,5 +1,6 @@
 package com.denweisenseel.scotlandsaarexperimental.data;
 
+import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.Marker;
 
 /**
@@ -11,7 +12,8 @@ public class Player {
 
     private int boardPosition;
     private String name;
-    private Marker marker;
+    private Circle marker;
+    private int id;
 
     public void setBoardPosition(int boardPosition) {
         this.boardPosition = boardPosition;
@@ -29,7 +31,19 @@ public class Player {
         return name;
     }
 
-    public void setMarker(Marker marker) {
+    public void setMarker(Circle marker) {
         this.marker = marker;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public Circle getMarker() {
+        return marker;
     }
 }
