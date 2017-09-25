@@ -2,6 +2,7 @@ package com.denweisenseel.scotlandsaarexperimental;
 
 import android.*;
 import android.Manifest;
+import android.app.DialogFragment;
 import android.app.FragmentManager;
 import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
@@ -16,6 +17,7 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
@@ -237,7 +239,20 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
                     int misterXPos = intent.getIntExtra("boardPosition", -1);
 
                     setMisterXMarker(misterXPos);
+                } else if (intent.getAction().equals(getString(R.string.GAME_WON))){
+                    sendToChatFragment(new ChatDataParcelable("System", "Player WON", "Now"));
+                    GameEndedFragment newFragment = new GameEndedFragment();
+                    newFragment.setMessage("Players won");
+                    FragmentManager fm = getFragmentManager();
+                    newFragment.show(fm, "game_ended");
+                }
 
+                else if (intent.getAction().equals(getString(R.string.GAME_LOST))){
+                    sendToChatFragment(new ChatDataParcelable("System", "Mr. X WON", "Now"));
+                    GameEndedFragment newFragment = new GameEndedFragment();
+                    newFragment.setMessage("Mr. X won");
+                    FragmentManager fm = getFragmentManager();
+                    newFragment.show(fm, "game_ended");
                 }
             }
         };
@@ -248,6 +263,9 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
         LocalBroadcastManager.getInstance(this).registerReceiver(gameStateReceiver, new IntentFilter(getString(R.string.TURN_START_PLAYER)));
         LocalBroadcastManager.getInstance(this).registerReceiver(gameStateReceiver, new IntentFilter(getString(R.string.GAME_POSITION_REACHED)));
         LocalBroadcastManager.getInstance(this).registerReceiver(gameStateReceiver, new IntentFilter(getString(R.string.GAME_REVEAL_X)));
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(gameStateReceiver, new IntentFilter(getString(R.string.GAME_WON)));
+        LocalBroadcastManager.getInstance(this).registerReceiver(gameStateReceiver, new IntentFilter(getString(R.string.GAME_LOST)));
 
 
 
