@@ -1,4 +1,4 @@
-package com.denweisenseel.scotlandsaarexperimental;
+package com.denweisenseel.scotlandsaarexperimental.data;
 
 
 import android.util.Log;

@@ -2,13 +2,9 @@ package com.denweisenseel.scotlandsaarexperimental;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -18,7 +14,6 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.AbsListView;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.android.volley.Request;
@@ -28,14 +23,12 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.denweisenseel.scotlandsaarexperimental.adapter.ChatMessageAdapter;
 import com.denweisenseel.scotlandsaarexperimental.api.RequestBuilder;
 import com.denweisenseel.scotlandsaarexperimental.data.ChatDataParcelable;
-import com.denweisenseel.scotlandsaarexperimental.data.VolleyRequestQueue;
+import com.denweisenseel.scotlandsaarexperimental.api.VolleyRequestQueue;
 import com.google.firebase.iid.FirebaseInstanceId;
 
 import org.json.JSONObject;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 
 
 public class ChatFragment extends Fragment {

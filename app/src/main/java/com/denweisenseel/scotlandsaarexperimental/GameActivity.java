@@ -31,17 +31,16 @@ import com.denweisenseel.scotlandsaarexperimental.adapter.BottomBarAdapter;
 import com.denweisenseel.scotlandsaarexperimental.api.RequestBuilder;
 import com.denweisenseel.scotlandsaarexperimental.customView.CustomViewPager;
 import com.denweisenseel.scotlandsaarexperimental.data.ChatDataParcelable;
+import com.denweisenseel.scotlandsaarexperimental.data.GameModel;
 import com.denweisenseel.scotlandsaarexperimental.data.Graph;
-import com.denweisenseel.scotlandsaarexperimental.data.MarkerTag;
 import com.denweisenseel.scotlandsaarexperimental.data.Player;
 import com.denweisenseel.scotlandsaarexperimental.dialogFragments.QuitGameFragment;
-import com.denweisenseel.scotlandsaarexperimental.data.VolleyRequestQueue;
+import com.denweisenseel.scotlandsaarexperimental.api.VolleyRequestQueue;
 import com.denweisenseel.scotlandsaarexperimental.services.GameLocationListener;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
@@ -149,7 +148,7 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
             public boolean onTabSelected(int position, boolean wasSelected) {
                 switch (position) {
                     case 0:
-                        if (pager.isActivated()) {
+                        if (pager.isEnabled()) {
                             pager.setCurrentItem(0);
                         } else {
                             Toast.makeText(GameActivity.this, "Game hasnt started yet", Toast.LENGTH_SHORT).show();
@@ -158,6 +157,8 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
                         break;
                     case 1:
                         pager.setCurrentItem(1);
+                        navigation.setNotification(new AHNotification(), 1);
+                        unreadNotficationCounter = 0;
                         break;
                     case 2:
                         pager.setCurrentItem(2);
@@ -393,8 +394,6 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
                     Marker m = googleMap.addMarker(new MarkerOptions().position(n.getPosition()).title(String.valueOf(n.getId())));
                     m.setTag(n.getId());
                     gameModel.addMarker(n.getId(), m);
-
-
                 }
 
                 for (Graph.Node n : graph.getNodes()) {

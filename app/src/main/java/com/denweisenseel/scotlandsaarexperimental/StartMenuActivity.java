@@ -16,7 +16,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.denweisenseel.scotlandsaarexperimental.api.RequestBuilder;
-import com.denweisenseel.scotlandsaarexperimental.data.VolleyRequestQueue;
+import com.denweisenseel.scotlandsaarexperimental.api.VolleyRequestQueue;
 import com.denweisenseel.scotlandsaarexperimental.dialogFragments.GamenameInputFragment;
 import com.denweisenseel.scotlandsaarexperimental.dialogFragments.UsernameInputFragment;
 import com.google.firebase.iid.FirebaseInstanceId;

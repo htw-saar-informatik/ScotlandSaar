@@ -10,7 +10,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
@@ -19,8 +18,7 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.denweisenseel.scotlandsaarexperimental.adapter.GameListModelAdapter;
 import com.denweisenseel.scotlandsaarexperimental.api.RequestBuilder;
 import com.denweisenseel.scotlandsaarexperimental.data.GameListInfoParcelable;
-import com.denweisenseel.scotlandsaarexperimental.data.Player;
-import com.denweisenseel.scotlandsaarexperimental.data.VolleyRequestQueue;
+import com.denweisenseel.scotlandsaarexperimental.api.VolleyRequestQueue;
 import com.google.firebase.iid.FirebaseInstanceId;
 
 import org.json.JSONArray;
