@@ -7,7 +7,7 @@ package com.denweisenseel.scotlandsaarexperimental.api;
 public class RequestBuilder {
 
 
-    private static String host = "https://scotlandsaareu.appspot.com/_ah/api/scotlandSaarAPI/v1/";
+    private static String host = "http://10.0.2.2:8080/_ah/api/scotlandSaarAPI/v1/";
 
     public static final int CREATE_GAME = 0x00;
     private static final String CREATE_GAME_FUNCTION = "createGame";
@@ -28,7 +28,7 @@ public class RequestBuilder {
     private static final String MAKE_MOVE_FUNCTION = "makeMove";
 
     public static final int UPDATE_POSITION = 0x06;
-    private static final String UPDATE_POSITION_FUNCTION = "updatePosition";
+    private static final String UPDATE_POSITION_FUNCTION = "submitPosition";
 
     public static String buildRequestUrl(int requestType){
         StringBuilder builder = new StringBuilder();

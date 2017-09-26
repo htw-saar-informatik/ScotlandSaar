@@ -161,11 +161,13 @@ public class ScotlandSaarGameEndpoint {
         return bean;
     }
 
-    @ApiMethod(name = "updatePosition")
-    public ResponseBean updatePosition(@Named("id") long id, @Named("fireBaseToken") String token, @Named("latitude") double latitude, @Named("longitude") double longitude) throws PlayerNotFoundException {
+
+    @ApiMethod(name = "submitPosition")
+    public ResponseBean submitPosition(@Named("id") long id, @Named("fireBaseToken") String token, @Named("latitude") double latitude, @Named("longitude") double longitude) throws PlayerNotFoundException {
 
         GameBoard gameBoard = ofy().load().type(GameBoard.class).id(id).now();
         Geolocation geolocation = new Geolocation(latitude,longitude);
+        System.out.println(id + "" + token + "" + latitude + "" + longitude);
         boolean success = gameBoard.updatePosition(token,geolocation);
         ofy().save().entity(gameBoard).now();
 
@@ -176,6 +178,5 @@ public class ScotlandSaarGameEndpoint {
 
         return response;
     }
-
 
 }

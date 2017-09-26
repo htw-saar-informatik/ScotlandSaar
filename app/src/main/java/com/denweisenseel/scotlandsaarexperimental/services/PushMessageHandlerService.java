@@ -76,6 +76,7 @@ public class PushMessageHandlerService extends FirebaseMessagingService {
                 int boardPosition = Integer.valueOf(m.get("playerPosition"));
                 int playerId = Integer.valueOf(m.get("playerPositionId"));
                 Log.i(TAG, "Player with" + playerId + " selected position "+boardPosition);
+                sendPlayerSelectionToLobby(getString(R.string.GAME_POSITION_SELECTED), playerId,boardPosition);
                 //TODO: Send information to activity, update map (Player  with id selected something)
             } else if(m.get(getString(R.string.protocol_type)).equals(getString(R.string.GAME_WON))) {
                 Log.i(TAG, "Player caught Mister X");
@@ -107,6 +108,17 @@ public class PushMessageHandlerService extends FirebaseMessagingService {
         // Also if you intend on generating your own notifications as a result of a received FCM
         // message, here is where that should be initiated. See sendNotification method below.
     }
+
+    private void sendPlayerSelectionToLobby(String string, int playerId, int boardPosition) {
+
+        Intent i = new Intent(string);
+        i.putExtra("playerId",playerId);
+        i.putExtra("boardPosition", boardPosition);
+
+        LocalBroadcastManager.getInstance(this).sendBroadcast(i);
+
+    }
+
     private  void sendGameEndedToLobby(String string){
         Intent i = new Intent(string);
         LocalBroadcastManager.getInstance(this).sendBroadcast(i);

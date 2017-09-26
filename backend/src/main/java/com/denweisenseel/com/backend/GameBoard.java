@@ -49,7 +49,7 @@ public class GameBoard {
 
     private int     turnCounter = 0;
     private boolean turnState = X_TURN;
-    private boolean gpsEnabled = false;
+    private boolean gpsEnabled = true;
     private int idCount = 0;
 
 
@@ -157,16 +157,21 @@ public class GameBoard {
                 p.setPlayerState(Player.PlayerState.IS_MOVING);
                 p.setBoardPosition(targetNodeId);
                 notifyPlayerMoving(p);
+                responseBean.setSuccess(true);
+                responseBean.setData(String.valueOf(Player.PlayerState.IS_MOVING));
+                responseBean.setPositionId(targetNodeId);
+
             } else {
                 p.setPlayerState(Player.PlayerState.IS_DONE);
                 p.setBoardPosition(targetNodeId);
                 notifyPlayerDone(p);
                 advanceGameState();
+
+                responseBean.setSuccess(true);
+                responseBean.setData(String.valueOf(Player.PlayerState.IS_DONE));
+                responseBean.setPositionId(targetNodeId);
             }
 
-            responseBean.setSuccess(true);
-            responseBean.setData("Alright, let's move to your position.");
-            responseBean.setPositionId(targetNodeId);
             return responseBean;
         }
         responseBean.setSuccess(false);
@@ -182,6 +187,7 @@ public class GameBoard {
             if (GraphBuilder.getGraph().get(p.getBoardPosition()).getLocation().distanceBetweenGeolocationInMetres(location) < 20) {
                 p.setPlayerState(Player.PlayerState.IS_DONE);
                 notifyPlayerDone(p);
+                advanceGameState();
                 return true;
             }
         }

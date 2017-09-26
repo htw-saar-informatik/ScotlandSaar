@@ -89,7 +89,7 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
     GameModel gameModel = new GameModel();
 
     //GPS
-    LocationListener locationListener;
+    GameLocationListener locationListener;
     LocationManager locationManager;
 
 
@@ -224,17 +224,17 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
                     setNotification("Mister X ist an der Reihe!");
                 } else if (intent.getAction().equals(getString(R.string.TURN_START_PLAYER))) {
                     setNotification("Spieler sind an der Reihe!");
+                } else if(intent.getAction().equals(getString(R.string.GAME_POSITION_SELECTED))) {
+                    int boardPosition = intent.getIntExtra("boardPosition", -1);
+                    int playerId = intent.getIntExtra("playerId", -1);
+
+                    updatePlayerSelection(playerId, boardPosition);
+
                 } else if (intent.getAction().equals(getString(R.string.GAME_POSITION_REACHED))) {
                     int playerId = intent.getIntExtra("playerId", -1);
                     int boardPosition = intent.getIntExtra("boardPosition", -1);
                     Log.v(TAG, "Updating playerPosition");
-
-                    try {
-                        gameModel.getPlayerById(playerId).getMarker().setCenter(graph.getNodeById(boardPosition).getPosition());
-                        Log.v(TAG, "Placed "+gameModel.getPlayerById(playerId).getName()+" on " + boardPosition);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+                    updatePlayerReachedMarker(playerId, boardPosition);
                 } else if(intent.getAction().equals(getString(R.string.GAME_REVEAL_X))) {
                     int misterXPos = intent.getIntExtra("boardPosition", -1);
 
@@ -266,11 +266,39 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
 
         LocalBroadcastManager.getInstance(this).registerReceiver(gameStateReceiver, new IntentFilter(getString(R.string.GAME_WON)));
         LocalBroadcastManager.getInstance(this).registerReceiver(gameStateReceiver, new IntentFilter(getString(R.string.GAME_LOST)));
+        LocalBroadcastManager.getInstance(this).registerReceiver(gameStateReceiver, new IntentFilter(getString(R.string.GAME_POSITION_SELECTED)));
+
 
 
 
         int id = getSharedPreferences(getString(R.string.gameData), Context.MODE_PRIVATE).getInt(getString(R.string.playerId), -1);
         Toast.makeText(this, String.valueOf(id), Toast.LENGTH_SHORT).show();
+    }
+
+    private void updatePlayerReachedMarker(int playerId, int boardPosition) {
+        try {
+            gameModel.getPlayerById(playerId).getMarker()
+            .setCenter(graph.getNodeById(boardPosition).getPosition());
+            gameModel.getPlayerById(playerId).getMarker()
+                    .setStrokeColor(Color.BLACK);
+
+            Log.v(TAG, "Placed "+gameModel.getPlayerById(playerId).getName()+" on " + boardPosition);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void updatePlayerSelection(int playerId, int boardPosition) {
+
+
+        try {   gameModel.getPlayerById(playerId).getMarker()
+                .setCenter(graph.getNodeById(boardPosition).getPosition());
+            gameModel.getPlayerById(playerId).getMarker()
+                    .setStrokeColor(Color.RED);
+            Log.v(TAG, "Placed "+gameModel.getPlayerById(playerId).getMarker().getStrokeColor()+" on " + boardPosition);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void requestQuitGameDialog() {
@@ -480,8 +508,14 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
             public void onResponse(JSONObject response) {
                 Log.v(TAG, response.toString());
                 try {
-                    if(response.getBoolean("success") && gameModel.isMisterX()) {
-                        // gameModel.getPlayerById(gameModel.getId()).getMarker().setCenter(graph.getNodeById(response.getInt("positionId")).getPosition());
+                    if(response.getBoolean("success") && response.has("data")) {
+                        String responseData = response.getString("data");
+                        if(responseData.equals("IS_MOVING")) {
+                            int position = response.getInt("positionId");
+                            LatLng targetLocation = gameModel.getGraph().getNodeById(position).getPosition();
+                            locationListener.setTargetLocation(targetLocation);
+                            listenForUpdates();
+                        }
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -533,12 +567,13 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
             @Override
             public void onResponse(JSONObject response) {
                 Log.v(TAG, response.toString());
+                stopListening();
 
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Log.e(TAG, error.toString());
+                Log.e(TAG, error.toString() + "PUT");
             }
         });
 
