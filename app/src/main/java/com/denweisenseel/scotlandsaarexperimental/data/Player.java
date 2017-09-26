@@ -1,5 +1,7 @@
 package com.denweisenseel.scotlandsaarexperimental.data;
 
+import android.util.Log;
+
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.Marker;
 
@@ -45,7 +47,8 @@ public class Player {
     }
 
     public Circle getMarker() {
-        return marker;
+
+        Log.e("Player", "Circled of "+name+" has been accessed"); return marker;
     }
 
     public void setMisterX(boolean misterX) {

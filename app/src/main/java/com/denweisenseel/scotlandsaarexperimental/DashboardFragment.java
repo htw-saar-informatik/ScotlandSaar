@@ -36,7 +36,6 @@ public class DashboardFragment extends Fragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        Log.v("TEST","Pressed");
         Button startGame = (Button) view.findViewById(R.id.dashboard_startGame);
         startGame.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -62,7 +61,6 @@ public class DashboardFragment extends Fragment {
     }
 
     public void onStartGameButtonPressed() {
-        Log.v("TEST","Pressed");
         if (mListener != null) {
             mListener.onStartGame();
         }

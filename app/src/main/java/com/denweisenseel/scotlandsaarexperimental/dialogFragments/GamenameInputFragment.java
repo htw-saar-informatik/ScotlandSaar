@@ -71,7 +71,7 @@ public class GamenameInputFragment extends DialogFragment {
                     case EditorInfo.IME_ACTION_DONE:
                         if (!gamenameInput.getText().toString().matches("[a-zA-Z]+")) {
                             Toast.makeText(getActivity(), "Gamename darf nur aus Buchstaben bestehen.", Toast.LENGTH_LONG).show();
-                            Log.v("TEST", "TESTGamename");
+
                         }
                         else
                         {
@@ -98,7 +98,6 @@ public class GamenameInputFragment extends DialogFragment {
     @Override
     public void onAttach(Context activity) {
         super.onAttach(activity);
-        Log.v(TAG, "Dennis");
 
         try
         {

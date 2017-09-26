@@ -69,7 +69,7 @@ public class UsernameInputFragment extends DialogFragment {
                     case EditorInfo.IME_ACTION_DONE:
                         if(!usernameInput.getText().toString().matches("[a-zA-Z]+")){
                             Toast.makeText(getActivity(), "Username darf nur aus Buchstaben bestehen.", Toast.LENGTH_LONG).show();
-                            Log.v("TEST","TEST");
+
                         } else {
                             SharedPreferences.Editor editor = getActivity().getSharedPreferences(getString(R.string.gameData),Context.MODE_PRIVATE).edit();
                             editor.putString(getString(R.string.username), usernameInput.getText().toString());

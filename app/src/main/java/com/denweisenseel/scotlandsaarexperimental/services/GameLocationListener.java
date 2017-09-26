@@ -16,7 +16,6 @@ public class GameLocationListener implements LocationListener {
 
     public GameLocationListener(GPSCallbackInterface gpsCallbackInterface) {
         this.gpsCallbackInterface = gpsCallbackInterface;
-        Log.i("TESTIGER","NOW");
     }
 
     @Override
@@ -26,9 +25,6 @@ public class GameLocationListener implements LocationListener {
                 gpsCallbackInterface.updatePosition(location);
             }
         }
-        Log.i("TESTIGER","NOW");
-        Log.i("TESTIGER","NOW");
-        Log.i("TESTIGER","NOW");
     }
 
     @Override

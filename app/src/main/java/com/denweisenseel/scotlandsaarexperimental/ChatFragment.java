@@ -37,13 +37,8 @@ public class ChatFragment extends Fragment {
     private ChatMessageAdapter cAdapater;
     private final ArrayList<ChatDataParcelable> chatList =  new ArrayList();
 
-
-
-    private BroadcastReceiver pushUpdateReceiver;
-
     private final String TAG = "GameChat";
 
-    String firebaseToken;
     String gameId;
 
     public ChatFragment() {
@@ -76,8 +71,6 @@ public class ChatFragment extends Fragment {
         ListView listView = v.findViewById(R.id.chat_fragment_listview);
 
         cAdapater = new ChatMessageAdapter(getActivity(), chatList);
-        chatList.add(new ChatDataParcelable("Test","Test","Test"));
-
 
 
         cAdapater.notifyDataSetChanged();
@@ -88,13 +81,12 @@ public class ChatFragment extends Fragment {
 
 
         final EditText chatMessageInput = v.findViewById(R.id.chat_fragment_chatMessage);
-        Log.i("TEST", "Test");
 
         chatMessageInput.setOnEditorActionListener(new EditText.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_DONE || event.getAction() == KeyEvent.KEYCODE_ENTER) {
-                    Log.v("ChatMessage","Send:"+chatMessageInput.getText().toString());
+                    Log.i("ChatMessage","Send:"+chatMessageInput.getText().toString());
 
                     sendChatMessage(chatMessageInput.getText().toString());
                     chatMessageInput.setText("");
@@ -117,12 +109,6 @@ public class ChatFragment extends Fragment {
         // Inflate the layout for this fragment
 
         return inflater.inflate(R.layout.fragment_chat, container, false);
-    }
-
-    public void saveChatMessage(ChatDataParcelable message) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(message);
-        }
     }
 
     @Override
@@ -153,18 +139,7 @@ public class ChatFragment extends Fragment {
         cAdapater.notifyDataSetChanged();
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
     public interface ChatFragmentInteractionListener {
-        void onFragmentInteraction(ChatDataParcelable chatDataParcelable);
 
         void retrieveChatMessages();
     }
@@ -179,7 +154,7 @@ public class ChatFragment extends Fragment {
         JsonObjectRequest gameRequest = new JsonObjectRequest(Request.Method.POST, RequestBuilder.buildRequestUrl(RequestBuilder.CHAT_MESSAGE, args ),null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
-                Log.i(TAG, "Message sent " + message);
+                Log.i(TAG, "Message sent successfully " + message);
             }
         }, new Response.ErrorListener() {
             @Override

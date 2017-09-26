@@ -72,7 +72,6 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
 
 
     private static final int NOTIFICATION_ID = 001;
-    BottomBarAdapter adapter;
     CustomViewPager pager;
     //CHAT
     private ChatFragment chatFragment;
@@ -232,6 +231,7 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
 
                     try {
                         gameModel.getPlayerById(playerId).getMarker().setCenter(graph.getNodeById(boardPosition).getPosition());
+                        Log.v(TAG, "Placed "+gameModel.getPlayerById(playerId).getName()+" on " + boardPosition);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -283,16 +283,10 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
         chatFragment.sendMessage(chatMessage);
     }
 
-    @Override
-    public void onFragmentInteraction(ChatDataParcelable chatDataParcelable) {
-        //TODO save chat messages (1 hour)
-    }
 
     @Override
     public void retrieveChatMessages() {
         if (!getIntent().getBooleanExtra(getString(R.string.host), false)) {
-            Log.v(TAG, String.valueOf(chatFragment.isAdded()));
-
             ArrayList<String> playersInLobby = getIntent().getStringArrayListExtra("players");
             ArrayList<ChatDataParcelable> chatMessages = new ArrayList<ChatDataParcelable>();
 
@@ -303,7 +297,7 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
             for (int i = 0; i < chatMessages.size(); i++) {
                 sendToChatFragment(chatMessages.get(i));
             }
-            Log.i(TAG, "Printet all players in the lobby into the chat");
+            Log.i(TAG, "There were already "+ playersInLobby.size() + "players in the lobby. Printed those to the chat.");
         }
     }
 
@@ -356,7 +350,7 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
     @Override
     public void onStartGame() {
         if (isHost) {
-            Log.v(TAG, "Starting game!");
+            Log.i(TAG, "Trying to start game!");
 
             String firebaseToken = FirebaseInstanceId.getInstance().getToken();
             String[] args = {gameId, firebaseToken};
@@ -365,7 +359,7 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
                 @Override
                 public void onResponse(JSONObject response) {
                     try {
-                        Log.i(TAG, "Started game" + response.toString());
+                        Log.i(TAG, "Successfully started game!");
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -487,7 +481,7 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
                 Log.v(TAG, response.toString());
                 try {
                     if(response.getBoolean("success") && gameModel.isMisterX()) {
-                        gameModel.getPlayerById(gameModel.getId()).getMarker().setCenter(graph.getNodeById(response.getInt("positionId")).getPosition());
+                        // gameModel.getPlayerById(gameModel.getId()).getMarker().setCenter(graph.getNodeById(response.getInt("positionId")).getPosition());
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -526,7 +520,7 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
     @Override
     public void updatePosition(Location location) {
 
-        Log.i(TAG, "UPDATING POSITION");
+        Log.v(TAG, "POSITION HAS CHANGED AND IS CLOOOOSE" + location);
 
         String firebaseToken = FirebaseInstanceId.getInstance().getToken();
         String latitude = String.valueOf(location.getLatitude());
