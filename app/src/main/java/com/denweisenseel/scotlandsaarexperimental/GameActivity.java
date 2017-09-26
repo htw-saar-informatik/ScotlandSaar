@@ -221,9 +221,13 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
                         e.printStackTrace();
                     }
                     navigation.enableItemAtPosition(0);
+                    setDashboardFramentPlayerType();
+                    dashboardFragment.showGameState();
                 } else if (intent.getAction().equals(getString(R.string.GAME_TURN_START_X))) {
                     setNotification("Mister X ist an der Reihe!");
+                    setDashboardFramentGameState(getString(R.string.GAME_TURN_START_X));
                 } else if (intent.getAction().equals(getString(R.string.TURN_START_PLAYER))) {
+                    setDashboardFramentGameState(getString(R.string.TURN_START_PLAYER));
                     setNotification("Spieler sind an der Reihe!");
                 } else if (intent.getAction().equals(getString(R.string.GAME_POSITION_REACHED))) {
                     int playerId = intent.getIntExtra("playerId", -1);
@@ -271,6 +275,14 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
 
         int id = getSharedPreferences(getString(R.string.gameData), Context.MODE_PRIVATE).getInt(getString(R.string.playerId), -1);
         Toast.makeText(this, String.valueOf(id), Toast.LENGTH_SHORT).show();
+    }
+
+    private void setDashboardFramentGameState(String gameTurn){
+        dashboardFragment.setGameState(gameTurn);
+    }
+
+    private void setDashboardFramentPlayerType(){
+        dashboardFragment.setPlayerType(gameModel.isMisterX());
     }
 
     public void requestQuitGameDialog() {
