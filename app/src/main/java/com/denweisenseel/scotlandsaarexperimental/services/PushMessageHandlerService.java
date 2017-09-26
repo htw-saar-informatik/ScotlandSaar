@@ -18,6 +18,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import static com.denweisenseel.scotlandsaarexperimental.R.string.GAME_TURN_START_X;
+import static com.denweisenseel.scotlandsaarexperimental.R.string.playerId;
+
 public class PushMessageHandlerService extends FirebaseMessagingService {
 
 
@@ -64,8 +67,10 @@ public class PushMessageHandlerService extends FirebaseMessagingService {
                 forwardToMap(getString(R.string.LOBBY_GAME_START),  args);
             } else if(m.get((getString(R.string.protocol_type))).equals(getString(R.string.GAME_TURN_START_X))) {
                 forwardToMap(getString(R.string.GAME_TURN_START_X), null);
+                sendTurnStartToDashboard(getString(R.string.GAME_TURN_START_X));
             } else if(m.get((getString(R.string.protocol_type))).equals(getString(R.string.TURN_START_PLAYER))) {
                 forwardToMap(getString(R.string.TURN_START_PLAYER), null);
+                sendTurnStartToDashboard(getString(R.string.TURN_START_PLAYER));
             } else if(m.get(getString(R.string.protocol_type)).equals(getString(R.string.GAME_POSITION_REACHED))) {
                 int boardPosition = Integer.valueOf(m.get("playerPosition"));
                 int playerId = Integer.valueOf(m.get("playerPositionId"));
@@ -136,6 +141,11 @@ public class PushMessageHandlerService extends FirebaseMessagingService {
         i.putExtra("boardPosition", boardPosition);
         LocalBroadcastManager.getInstance(this).sendBroadcast(i);
 
+    }
+
+    private void sendTurnStartToDashboard(String string) {
+        Intent i = new Intent(string);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(i);
     }
 
     private void forwardToMap(String string, String args) {

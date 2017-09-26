@@ -2,6 +2,7 @@ package com.denweisenseel.scotlandsaarexperimental;
 
 import android.*;
 import android.Manifest;
+import android.app.Activity;
 import android.app.DialogFragment;
 import android.app.FragmentManager;
 import android.app.NotificationManager;
@@ -23,6 +24,8 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
 import com.android.volley.Request;
@@ -138,7 +141,6 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
         AHBottomNavigationItem item1 = new AHBottomNavigationItem(R.string.game_map, R.drawable.ic_home_black_24dp, R.color.color_tab_1);
         AHBottomNavigationItem item2 = new AHBottomNavigationItem(R.string.game_chat, R.drawable.ic_notifications_black_24dp, R.color.color_tab_1);
         AHBottomNavigationItem item3 = new AHBottomNavigationItem(R.string.game_dashboard, R.drawable.ic_dashboard_black_24dp, R.color.color_tab_1);
-
         navigation.addItem(item1);
         navigation.addItem(item2);
         navigation.addItem(item3);
@@ -153,6 +155,7 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
                 switch (position) {
                     case 0:
                         if (pager.isEnabled()) {
+                            hideKeyboard(GameActivity.this);
                             pager.setCurrentItem(0);
                         } else {
                             Toast.makeText(GameActivity.this, "Game hasnt started yet", Toast.LENGTH_SHORT).show();
@@ -165,6 +168,7 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
                         unreadNotficationCounter = 0;
                         break;
                     case 2:
+                        hideKeyboard(GameActivity.this);
                         pager.setCurrentItem(2);
                         break;
                 }
@@ -220,9 +224,13 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
                         e.printStackTrace();
                     }
                     navigation.enableItemAtPosition(0);
+                    setDashboardFramentPlayerType();
+                    dashboardFragment.showGameState();
                 } else if (intent.getAction().equals(getString(R.string.GAME_TURN_START_X))) {
                     setNotification("Mister X ist an der Reihe!");
+                    setDashboardFramentGameState(getString(R.string.GAME_TURN_START_X));
                 } else if (intent.getAction().equals(getString(R.string.TURN_START_PLAYER))) {
+                    setDashboardFramentGameState(getString(R.string.TURN_START_PLAYER));
                     setNotification("Spieler sind an der Reihe!");
                 } else if(intent.getAction().equals(getString(R.string.GAME_POSITION_SELECTED))) {
                     int boardPosition = intent.getIntExtra("boardPosition", -1);
@@ -291,14 +299,22 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
     private void updatePlayerSelection(int playerId, int boardPosition) {
 
 
-        try {   gameModel.getPlayerById(playerId).getMarker()
-                .setCenter(graph.getNodeById(boardPosition).getPosition());
+        try {
+            gameModel.getPlayerById(playerId).getMarker()
+                    .setCenter(graph.getNodeById(boardPosition).getPosition());
             gameModel.getPlayerById(playerId).getMarker()
                     .setStrokeColor(Color.RED);
-            Log.v(TAG, "Placed "+gameModel.getPlayerById(playerId).getMarker().getStrokeColor()+" on " + boardPosition);
+            Log.v(TAG, "Placed " + gameModel.getPlayerById(playerId).getMarker().getStrokeColor() + " on " + boardPosition);
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    private void setDashboardFramentGameState(String gameTurn){
+        dashboardFragment.setGameState(gameTurn);
+    }
+
+    private void setDashboardFramentPlayerType(){
+        dashboardFragment.setPlayerType(gameModel.isMisterX());
     }
 
     public void requestQuitGameDialog() {
@@ -630,5 +646,16 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
         } else {
             gameModel.getMisterXCircle().setCenter(gameModel.getGraph().getNodeById(misterXMarker).getPosition());
         }
+    }
+
+    public static void hideKeyboard(Activity activity) {
+        InputMethodManager imm = (InputMethodManager) activity.getSystemService(Activity.INPUT_METHOD_SERVICE);
+        //Find the currently focused view, so we can grab the correct window token from it.
+        View view = activity.getCurrentFocus();
+        //If no view currently has focus, create a new one, just so we can grab a window token from it
+        if (view == null) {
+            view = new View(activity);
+        }
+        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
 }
