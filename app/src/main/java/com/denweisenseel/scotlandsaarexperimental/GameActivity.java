@@ -80,7 +80,6 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
     private ChatFragment chatFragment;
 
     //CHAT
-    private BroadcastReceiver chatMessageReceiver;
     private int unreadNotficationCounter = 0;
     private AHBottomNavigation navigation;
 
@@ -96,7 +95,7 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
     private GameLocationListener locationListener;
     private LocationManager locationManager;
 
-    //CONSTANTS
+    //CONSTANTS for logging purposes
     private String TAG = "GameActivity";
 
 
@@ -106,7 +105,6 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
         setContentView(R.layout.activity_game);
 
         initLayout();
-        initChatPushReceivers();
         initGamePushReceivers();
 
         //GPS Init
@@ -206,8 +204,6 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
     }
 
     private void updatePlayerSelection(int playerId, int boardPosition) {
-
-
         try {
             gameModel.getPlayerById(playerId).getMarker()
                     .setCenter(graph.getNodeById(boardPosition).getPosition());
@@ -218,6 +214,7 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
             e.printStackTrace();
         }
     }
+
     private void setDashboardFramentGameState(String gameTurn){
         dashboardFragment.setGameState(gameTurn);
     }
@@ -236,22 +233,6 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
         chatFragment.sendMessage(chatMessage);
     }
 
-    @Override
-    public void retrieveChatMessages() {
-        if (!getIntent().getBooleanExtra(getString(R.string.host), false)) {
-            ArrayList<String> playersInLobby = getIntent().getStringArrayListExtra("players");
-            ArrayList<ChatDataParcelable> chatMessages = new ArrayList<ChatDataParcelable>();
-
-            for (int i = 0; i < playersInLobby.size(); i++) {
-                chatMessages.add(new ChatDataParcelable("System", playersInLobby.get(i) + " is in the lobby", new SimpleDateFormat("HH.mm").format(new Date())));
-            }
-
-            for (int i = 0; i < chatMessages.size(); i++) {
-                sendToChatFragment(chatMessages.get(i));
-            }
-            Log.i(TAG, "There were already "+ playersInLobby.size() + "players in the lobby. Printed those to the chat.");
-        }
-    }
 
     @Override
     public void onYesButtonClicked() {
@@ -373,7 +354,6 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
                 }
 
                 for (Player p : gameModel.getPlayerList()) {
-
                     int id = gameModel.getPlayerList().indexOf(p);
                     int color;
 
@@ -450,6 +430,7 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
         return true;
     }
 
+    //GPS STUFF IS HERE!
 
     @Override
     public void gpsDeactivated(String s) {
@@ -509,6 +490,10 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
         locationManager.removeUpdates(locationListener);
     }
 
+    //GPS DONE
+
+
+    //This is the reveal marker.
     public void setMisterXMarker(final int misterXMarker) {
         if(gameModel.getMisterXCircle() == null) {
             mapFragment.getMapAsync(new OnMapReadyCallback() {
@@ -527,9 +512,7 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
 
     public static void hideKeyboard(Activity activity) {
         InputMethodManager imm = (InputMethodManager) activity.getSystemService(Activity.INPUT_METHOD_SERVICE);
-        //Find the currently focused view, so we can grab the correct window token from it.
         View view = activity.getCurrentFocus();
-        //If no view currently has focus, create a new one, just so we can grab a window token from it
         if (view == null) {
             view = new View(activity);
         }
@@ -593,39 +576,22 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
         LocalBroadcastManager.getInstance(this).registerReceiver(gameStateReceiver, new IntentFilter(getString(R.string.TURN_START_PLAYER)));
         LocalBroadcastManager.getInstance(this).registerReceiver(gameStateReceiver, new IntentFilter(getString(R.string.GAME_POSITION_REACHED)));
         LocalBroadcastManager.getInstance(this).registerReceiver(gameStateReceiver, new IntentFilter(getString(R.string.GAME_REVEAL_X)));
-
         LocalBroadcastManager.getInstance(this).registerReceiver(gameStateReceiver, new IntentFilter(getString(R.string.GAME_WON)));
         LocalBroadcastManager.getInstance(this).registerReceiver(gameStateReceiver, new IntentFilter(getString(R.string.GAME_LOST)));
         LocalBroadcastManager.getInstance(this).registerReceiver(gameStateReceiver, new IntentFilter(getString(R.string.GAME_POSITION_SELECTED)));
     }
 
-    private void initChatPushReceivers() {
-        chatMessageReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                if (intent.getAction().equals(getString(R.string.LOBBY_PLAYER_JOIN))) {
-                    ArrayList<String> argList = intent.getStringArrayListExtra(getString(R.string.BROADCAST_DATA));
-                    String playerName = argList.get(0);
-                    ChatDataParcelable chatMessage = new ChatDataParcelable(playerName, "joined the lobby", new SimpleDateFormat("HH.mm").format(new Date()));
-                    sendToChatFragment(chatMessage);
-                } else if (intent.getAction().equals(getString(R.string.LOBBY_PLAYER_MESSAGE))) {
-                    ArrayList<String> argList = intent.getStringArrayListExtra(getString(R.string.BROADCAST_DATA));
-                    ChatDataParcelable chatMessage = new ChatDataParcelable(argList.get(0), argList.get(1), argList.get(2));
-                    sendToChatFragment(chatMessage);
-                    if (pager.getCurrentItem() != 1) {
-                        unreadNotficationCounter++;
-                        AHNotification notification = new AHNotification.Builder()
-                                .setText(String.valueOf(unreadNotficationCounter))
-                                .setBackgroundColor(ContextCompat.getColor(GameActivity.this, R.color.colorBottomNavigationNotification))
-                                .setTextColor(ContextCompat.getColor(GameActivity.this, R.color.colorBottomNavigationDisable))
-                                .build();
-                        navigation.setNotification(notification, 1);
-                    }
-                }
-            }
-        };
 
-        LocalBroadcastManager.getInstance(this).registerReceiver(chatMessageReceiver, new IntentFilter(getString(R.string.LOBBY_PLAYER_JOIN)));
-        LocalBroadcastManager.getInstance(this).registerReceiver(chatMessageReceiver, new IntentFilter(getString(R.string.LOBBY_PLAYER_MESSAGE)));
+    @Override
+    public void onMessageReceived() {
+        if (pager.getCurrentItem() != 1) {
+            unreadNotficationCounter++;
+            AHNotification notification = new AHNotification.Builder()
+                    .setText(String.valueOf(unreadNotficationCounter))
+                    .setBackgroundColor(ContextCompat.getColor(GameActivity.this, R.color.colorBottomNavigationNotification))
+                    .setTextColor(ContextCompat.getColor(GameActivity.this, R.color.colorBottomNavigationDisable))
+                    .build();
+            navigation.setNotification(notification, 1);
+        }
     }
 }
