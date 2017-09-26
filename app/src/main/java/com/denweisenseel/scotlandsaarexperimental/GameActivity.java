@@ -73,51 +73,61 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
         OnMapReadyCallback, DashboardFragment.DashboardInteractionListener,
         QuitGameFragment.OnFragmentInteractionListener, GameLocationListener.GPSCallbackInterface {
 
-
-    private static final int NOTIFICATION_ID = 001;
-    CustomViewPager pager;
-    //CHAT
-    private ChatFragment chatFragment;
-    private BroadcastReceiver chatMessageReceiver;
-    private ArrayList<ChatDataParcelable> chatList;
-    boolean isHost = false;
-
-    String gameId;
-    int unreadNotficationCounter = 0;
-
+    //LAYOUT
+    private CustomViewPager pager;
     private SupportMapFragment mapFragment;
-    private BroadcastReceiver gameStateReceiver;
     private DashboardFragment dashboardFragment;
+    private ChatFragment chatFragment;
 
-    GameModel gameModel = new GameModel();
+    //CHAT
+    private BroadcastReceiver chatMessageReceiver;
+    private int unreadNotficationCounter = 0;
+    private AHBottomNavigation navigation;
+
+    //GAME
+    private BroadcastReceiver gameStateReceiver;
+    private boolean isHost = false;
+    private String gameId;
+    private GoogleMap map;
+    private Graph graph;
+    private GameModel gameModel;
 
     //GPS
-    GameLocationListener locationListener;
-    LocationManager locationManager;
+    private GameLocationListener locationListener;
+    private LocationManager locationManager;
 
-
+    //CONSTANTS
     private String TAG = "GameActivity";
-    private GoogleMap map;
 
-    private Graph graph;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
 
+        initLayout();
+        initChatPushReceivers();
+        initGamePushReceivers();
+
+        //GPS Init
         locationListener = new GameLocationListener(this);
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
+        //Gamemodel Init
+        gameModel = new GameModel();
+        initGraph();
+    }
+
+    private void initLayout() {
+        //Get some vars out of intent
         isHost = getIntent().getBooleanExtra(getString(R.string.host), false);
         gameId = getIntent().getStringExtra(getString(R.string.gameId));
 
+        //Styling the bottom navigation
         pager = (CustomViewPager) findViewById(R.id.viewpager);
         pager.setPagingEnabled(false);
 
         BottomBarAdapter bottomBarAdapter = new BottomBarAdapter(getSupportFragmentManager());
-
 
         mapFragment = MapFragment.newInstance();
         mapFragment.getMapAsync(this);
@@ -129,14 +139,12 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
         dashboardFragment = DashboardFragment.newInstance("null", "null");
         bottomBarAdapter.addFragments(dashboardFragment);
 
-
         pager.setAdapter(bottomBarAdapter);
 
         pager.setCurrentItem(1);
         pager.setOffscreenPageLimit(3);
 
-
-        final AHBottomNavigation navigation = (AHBottomNavigation) findViewById(R.id.navigation);
+        navigation = (AHBottomNavigation) findViewById(R.id.navigation);
 
         AHBottomNavigationItem item1 = new AHBottomNavigationItem(R.string.game_map, R.drawable.ic_home_black_24dp, R.color.color_tab_1);
         AHBottomNavigationItem item2 = new AHBottomNavigationItem(R.string.game_chat, R.drawable.ic_notifications_black_24dp, R.color.color_tab_1);
@@ -147,8 +155,7 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
 
         navigation.setCurrentItem(1);
 
-
-        // Set listeners
+        // Set clicklisteners
         navigation.setOnTabSelectedListener(new AHBottomNavigation.OnTabSelectedListener() {
             @Override
             public boolean onTabSelected(int position, boolean wasSelected) {
@@ -176,111 +183,14 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
             }
         });
 
+        // Disable map tab, because game hasnt started yet
         navigation.disableItemAtPosition(0);
+    }
 
-//TODO move this to own method!
-        chatList = new ArrayList<ChatDataParcelable>();
-        chatMessageReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                if (intent.getAction().equals(getString(R.string.LOBBY_PLAYER_JOIN))) {
-                    ArrayList<String> argList = intent.getStringArrayListExtra(getString(R.string.BROADCAST_DATA));
-
-                    String playerName = argList.get(0);
-                    ChatDataParcelable chatMessage = new ChatDataParcelable(playerName, "joined the lobby", new SimpleDateFormat("HH.mm").format(new Date()));
-                    sendToChatFragment(chatMessage);
-                    chatList.add(chatMessage);
-
-                } else if (intent.getAction().equals(getString(R.string.LOBBY_PLAYER_MESSAGE))) {
-                    ArrayList<String> argList = intent.getStringArrayListExtra(getString(R.string.BROADCAST_DATA));
-                    ChatDataParcelable chatMessage = new ChatDataParcelable(argList.get(0), argList.get(1), argList.get(2));
-                    chatList.add(chatMessage);
-                    sendToChatFragment(chatMessage);
-                    if (pager.getCurrentItem() != 1) {
-                        unreadNotficationCounter++;
-                        AHNotification notification = new AHNotification.Builder()
-                                .setText(String.valueOf(unreadNotficationCounter))
-                                .setBackgroundColor(ContextCompat.getColor(GameActivity.this, R.color.colorBottomNavigationNotification))
-                                .setTextColor(ContextCompat.getColor(GameActivity.this, R.color.colorBottomNavigationDisable))
-                                .build();
-                        navigation.setNotification(notification, 1);
-                    }
-                }
-            }
-        };
-
-        LocalBroadcastManager.getInstance(this).registerReceiver(chatMessageReceiver, new IntentFilter(getString(R.string.LOBBY_PLAYER_JOIN)));
-        LocalBroadcastManager.getInstance(this).registerReceiver(chatMessageReceiver, new IntentFilter(getString(R.string.LOBBY_PLAYER_MESSAGE)));
-        ////UP TO HERE
-
-        gameStateReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                if (intent.getAction().equals(getString(R.string.LOBBY_GAME_START))) {
-                    String args = intent.getStringExtra(getString(R.string.BROADCAST_DATA));
-                    try {
-                        populateGameModel(args);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                    navigation.enableItemAtPosition(0);
-                    setDashboardFramentPlayerType();
-                    dashboardFragment.showGameState();
-                } else if (intent.getAction().equals(getString(R.string.GAME_TURN_START_X))) {
-                    setNotification("Mister X ist an der Reihe!");
-                    setDashboardFramentGameState(getString(R.string.GAME_TURN_START_X));
-                } else if (intent.getAction().equals(getString(R.string.TURN_START_PLAYER))) {
-                    setDashboardFramentGameState(getString(R.string.TURN_START_PLAYER));
-                    setNotification("Spieler sind an der Reihe!");
-                } else if(intent.getAction().equals(getString(R.string.GAME_POSITION_SELECTED))) {
-                    int boardPosition = intent.getIntExtra("boardPosition", -1);
-                    int playerId = intent.getIntExtra("playerId", -1);
-
-                    updatePlayerSelection(playerId, boardPosition);
-
-                } else if (intent.getAction().equals(getString(R.string.GAME_POSITION_REACHED))) {
-                    int playerId = intent.getIntExtra("playerId", -1);
-                    int boardPosition = intent.getIntExtra("boardPosition", -1);
-                    Log.v(TAG, "Updating playerPosition");
-                    updatePlayerReachedMarker(playerId, boardPosition);
-                } else if(intent.getAction().equals(getString(R.string.GAME_REVEAL_X))) {
-                    int misterXPos = intent.getIntExtra("boardPosition", -1);
-
-                    setMisterXMarker(misterXPos);
-                } else if (intent.getAction().equals(getString(R.string.GAME_WON))){
-                    sendToChatFragment(new ChatDataParcelable("System", "Player WON", "Now"));
-                    GameEndedFragment newFragment = new GameEndedFragment();
-                    newFragment.setMessage("Players won");
-                    FragmentManager fm = getFragmentManager();
-                    newFragment.show(fm, "game_ended");
-                }
-
-                else if (intent.getAction().equals(getString(R.string.GAME_LOST))){
-                    sendToChatFragment(new ChatDataParcelable("System", "Mr. X WON", "Now"));
-                    GameEndedFragment newFragment = new GameEndedFragment();
-                    newFragment.setMessage("Mr. X won");
-                    FragmentManager fm = getFragmentManager();
-                    newFragment.show(fm, "game_ended");
-                }
-            }
-        };
-
-
-        LocalBroadcastManager.getInstance(this).registerReceiver(gameStateReceiver, new IntentFilter(getString(R.string.LOBBY_GAME_START)));
-        LocalBroadcastManager.getInstance(this).registerReceiver(gameStateReceiver, new IntentFilter(getString(R.string.GAME_TURN_START_X)));
-        LocalBroadcastManager.getInstance(this).registerReceiver(gameStateReceiver, new IntentFilter(getString(R.string.TURN_START_PLAYER)));
-        LocalBroadcastManager.getInstance(this).registerReceiver(gameStateReceiver, new IntentFilter(getString(R.string.GAME_POSITION_REACHED)));
-        LocalBroadcastManager.getInstance(this).registerReceiver(gameStateReceiver, new IntentFilter(getString(R.string.GAME_REVEAL_X)));
-
-        LocalBroadcastManager.getInstance(this).registerReceiver(gameStateReceiver, new IntentFilter(getString(R.string.GAME_WON)));
-        LocalBroadcastManager.getInstance(this).registerReceiver(gameStateReceiver, new IntentFilter(getString(R.string.GAME_LOST)));
-        LocalBroadcastManager.getInstance(this).registerReceiver(gameStateReceiver, new IntentFilter(getString(R.string.GAME_POSITION_SELECTED)));
-
-
-
-
-        int id = getSharedPreferences(getString(R.string.gameData), Context.MODE_PRIVATE).getInt(getString(R.string.playerId), -1);
-        Toast.makeText(this, String.valueOf(id), Toast.LENGTH_SHORT).show();
+    private void initGraph() {
+        graph = new Graph();
+        graph.initialize(this, R.raw.graph);
+        gameModel.setGraph(graph);
     }
 
     private void updatePlayerReachedMarker(int playerId, int boardPosition) {
@@ -289,7 +199,6 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
             .setCenter(graph.getNodeById(boardPosition).getPosition());
             gameModel.getPlayerById(playerId).getMarker()
                     .setStrokeColor(Color.BLACK);
-
             Log.v(TAG, "Placed "+gameModel.getPlayerById(playerId).getName()+" on " + boardPosition);
         } catch (Exception e) {
             e.printStackTrace();
@@ -326,7 +235,6 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
     private void sendToChatFragment(ChatDataParcelable chatMessage) {
         chatFragment.sendMessage(chatMessage);
     }
-
 
     @Override
     public void retrieveChatMessages() {
@@ -399,7 +307,8 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
             String firebaseToken = FirebaseInstanceId.getInstance().getToken();
             String[] args = {gameId, firebaseToken};
 
-            JsonObjectRequest gameRequest = new JsonObjectRequest(Request.Method.POST, RequestBuilder.buildRequestUrl(RequestBuilder.START_GAME, args), null, new Response.Listener<JSONObject>() {
+            JsonObjectRequest gameRequest = new JsonObjectRequest(Request.Method.POST,
+                    RequestBuilder.buildRequestUrl(RequestBuilder.START_GAME, args), null, new Response.Listener<JSONObject>() {
                 @Override
                 public void onResponse(JSONObject response) {
                     try {
@@ -423,12 +332,10 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
 
     @Override
     public void onMakeMove() {
-        Log.i(TAG, "Test drückt");
         listenForUpdates();
     }
 
     private void populateGameModel(String input) throws JSONException {
-
         JSONObject json = new JSONObject(input);
         gameModel.setMisterX(json.getBoolean("isMisterX"));
 
@@ -445,15 +352,10 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
             gameModel.addPlayer(p);
         }
 
-        placePlayersOnMap();
-
+        placeDataOnMap();
     }
 
-    private void placePlayersOnMap() {
-        graph = new Graph();
-        graph.initialize(this, R.raw.graph);
-
-        gameModel.setGraph(graph);
+    private void placeDataOnMap() {
 
         mapFragment.getMapAsync(new OnMapReadyCallback() {
             @Override
@@ -473,7 +375,6 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
                 for (Player p : gameModel.getPlayerList()) {
 
                     int id = gameModel.getPlayerList().indexOf(p);
-
                     int color;
 
                     switch(id) {
@@ -549,18 +450,6 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
         return true;
     }
 
-    public void setNotification(String s) {
-
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
-                .setSmallIcon(R.drawable.ic_notifications_black_24dp)
-                .setContentTitle(getString(R.string.SCOTLANDSAAR))
-                .setContentText(s);
-
-        NotificationManager mNotifyMgr =
-                (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        mNotifyMgr.notify(NOTIFICATION_ID, builder.build());
-    }
-
 
     @Override
     public void gpsDeactivated(String s) {
@@ -569,9 +458,6 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
 
     @Override
     public void updatePosition(Location location) {
-
-        Log.v(TAG, "POSITION HAS CHANGED AND IS CLOOOOSE" + location);
-
         String firebaseToken = FirebaseInstanceId.getInstance().getToken();
         String latitude = String.valueOf(location.getLatitude());
         String longitude = String.valueOf(location.getLongitude());
@@ -598,19 +484,10 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
 
     public void listenForUpdates() {
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.CESS_COARSE_LOCATION}, 1001);
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},1001);
-
-            return;
         } else {
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 10, locationListener);
         }
-
     }
 
     @Override
@@ -622,7 +499,7 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED
                         && (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
                         || ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED)) {
-                   Log.i(TAG, "GOT GPS PERMISSIONS");
+                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 10, locationListener);
                 }
             }
         }
@@ -657,5 +534,98 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
             view = new View(activity);
         }
         imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+    }
+
+    @Override
+    public void onBackPressed() {
+        requestQuitGameDialog();
+    }
+
+    private void initGamePushReceivers() {
+        gameStateReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (intent.getAction().equals(getString(R.string.LOBBY_GAME_START))) {
+                    String args = intent.getStringExtra(getString(R.string.BROADCAST_DATA));
+                    try {
+                        populateGameModel(args);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    navigation.enableItemAtPosition(0);
+                    setDashboardFramentPlayerType();
+                    dashboardFragment.showGameState();
+                } else if (intent.getAction().equals(getString(R.string.GAME_TURN_START_X))) {
+                    setDashboardFramentGameState(getString(R.string.GAME_TURN_START_X));
+                } else if (intent.getAction().equals(getString(R.string.TURN_START_PLAYER))) {
+                    setDashboardFramentGameState(getString(R.string.TURN_START_PLAYER));
+                } else if(intent.getAction().equals(getString(R.string.GAME_POSITION_SELECTED))) {
+                    int boardPosition = intent.getIntExtra("boardPosition", -1);
+                    int playerId = intent.getIntExtra("playerId", -1);
+                    updatePlayerSelection(playerId, boardPosition);
+                } else if (intent.getAction().equals(getString(R.string.GAME_POSITION_REACHED))) {
+                    int playerId = intent.getIntExtra("playerId", -1);
+                    int boardPosition = intent.getIntExtra("boardPosition", -1);
+                    Log.v(TAG, "Updating playerPosition");
+                    updatePlayerReachedMarker(playerId, boardPosition);
+                } else if(intent.getAction().equals(getString(R.string.GAME_REVEAL_X))) {
+                    int misterXPos = intent.getIntExtra("boardPosition", -1);
+                    setMisterXMarker(misterXPos);
+                } else if (intent.getAction().equals(getString(R.string.GAME_WON))){
+                    sendToChatFragment(new ChatDataParcelable("System", "Player WON", "Now"));
+                    GameEndedFragment newFragment = new GameEndedFragment();
+                    newFragment.setMessage("Players won");
+                    FragmentManager fm = getFragmentManager();
+                    newFragment.show(fm, "game_ended");
+                }
+                else if (intent.getAction().equals(getString(R.string.GAME_LOST))){
+                    sendToChatFragment(new ChatDataParcelable("System", "Mr. X WON", "Now"));
+                    GameEndedFragment newFragment = new GameEndedFragment();
+                    newFragment.setMessage("Mr. X won");
+                    FragmentManager fm = getFragmentManager();
+                    newFragment.show(fm, "game_ended");
+                }
+            }
+        };
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(gameStateReceiver, new IntentFilter(getString(R.string.LOBBY_GAME_START)));
+        LocalBroadcastManager.getInstance(this).registerReceiver(gameStateReceiver, new IntentFilter(getString(R.string.GAME_TURN_START_X)));
+        LocalBroadcastManager.getInstance(this).registerReceiver(gameStateReceiver, new IntentFilter(getString(R.string.TURN_START_PLAYER)));
+        LocalBroadcastManager.getInstance(this).registerReceiver(gameStateReceiver, new IntentFilter(getString(R.string.GAME_POSITION_REACHED)));
+        LocalBroadcastManager.getInstance(this).registerReceiver(gameStateReceiver, new IntentFilter(getString(R.string.GAME_REVEAL_X)));
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(gameStateReceiver, new IntentFilter(getString(R.string.GAME_WON)));
+        LocalBroadcastManager.getInstance(this).registerReceiver(gameStateReceiver, new IntentFilter(getString(R.string.GAME_LOST)));
+        LocalBroadcastManager.getInstance(this).registerReceiver(gameStateReceiver, new IntentFilter(getString(R.string.GAME_POSITION_SELECTED)));
+    }
+
+    private void initChatPushReceivers() {
+        chatMessageReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (intent.getAction().equals(getString(R.string.LOBBY_PLAYER_JOIN))) {
+                    ArrayList<String> argList = intent.getStringArrayListExtra(getString(R.string.BROADCAST_DATA));
+                    String playerName = argList.get(0);
+                    ChatDataParcelable chatMessage = new ChatDataParcelable(playerName, "joined the lobby", new SimpleDateFormat("HH.mm").format(new Date()));
+                    sendToChatFragment(chatMessage);
+                } else if (intent.getAction().equals(getString(R.string.LOBBY_PLAYER_MESSAGE))) {
+                    ArrayList<String> argList = intent.getStringArrayListExtra(getString(R.string.BROADCAST_DATA));
+                    ChatDataParcelable chatMessage = new ChatDataParcelable(argList.get(0), argList.get(1), argList.get(2));
+                    sendToChatFragment(chatMessage);
+                    if (pager.getCurrentItem() != 1) {
+                        unreadNotficationCounter++;
+                        AHNotification notification = new AHNotification.Builder()
+                                .setText(String.valueOf(unreadNotficationCounter))
+                                .setBackgroundColor(ContextCompat.getColor(GameActivity.this, R.color.colorBottomNavigationNotification))
+                                .setTextColor(ContextCompat.getColor(GameActivity.this, R.color.colorBottomNavigationDisable))
+                                .build();
+                        navigation.setNotification(notification, 1);
+                    }
+                }
+            }
+        };
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(chatMessageReceiver, new IntentFilter(getString(R.string.LOBBY_PLAYER_JOIN)));
+        LocalBroadcastManager.getInstance(this).registerReceiver(chatMessageReceiver, new IntentFilter(getString(R.string.LOBBY_PLAYER_MESSAGE)));
     }
 }

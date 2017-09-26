@@ -40,7 +40,8 @@
             android:name=".GameActivity"
             android:label="@string/title_activity_game"
             android:parentActivityName=".StartMenuActivity"
-            android:windowSoftInputMode="adjustResize">
+            android:windowSoftInputMode="adjustResize"
+            android:screenOrientation="portrait">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.denweisenseel.scotlandsaarexperimental.StartMenuActivity" />
