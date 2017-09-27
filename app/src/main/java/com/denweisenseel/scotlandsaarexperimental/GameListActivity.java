@@ -33,8 +33,8 @@ public class GameListActivity extends AppCompatActivity {
     private ArrayList<GameListInfoParcelable> gameList = new ArrayList<>();
     private GameListModelAdapter gameListAdapter;
     private final String TAG = "GAMELIST";
-    View progressOverlay;
-    SwipeRefreshLayout srl;
+    private View progressOverlay;
+    private SwipeRefreshLayout srl;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

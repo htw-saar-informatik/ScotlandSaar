@@ -480,6 +480,7 @@ public class GameBoard {
                     .setNotificationType(PushNotificationBuilder.PushNotificationType.LOBBY_GAME_START)
                     .addDataAttribute(PushNotificationBuilder.DataType.GAME_STATE, getGameStateAsJson(q.isMisterX()))
                     .addDataAttribute(PushNotificationBuilder.DataType.ARE_YOU_MISTER_X, q.isMisterX())
+                    .addDataAttribute(PushNotificationBuilder.DataType.PLAYER_ID, q.getId())
                     .push();
 
         }

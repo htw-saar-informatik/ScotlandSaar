@@ -1,6 +1,7 @@
 package com.denweisenseel.scotlandsaarexperimental.data;
 
 
+import android.graphics.Color;
 import android.util.Log;
 
 import com.denweisenseel.scotlandsaarexperimental.data.Player;
@@ -23,6 +24,7 @@ public class GameModel {
     private boolean misterX;
     private Graph graph;
     private Circle misterXCircle;
+    private String TAG = "GameModel";
 
     public void addMarker(int id, Marker m) {
         markerMap.put(id,m);
@@ -88,5 +90,28 @@ public class GameModel {
 
     public void setMisterXCircle(Circle misterXCircle) {
         this.misterXCircle = misterXCircle;
+    }
+
+
+    public void updatePlayerReachedMarker(int playerId, int boardPosition) {
+        try {
+            getPlayerById(playerId).getMarker().setCenter(graph.getNodeById(boardPosition).getPosition());
+            getPlayerById(playerId).getMarker().setStrokeColor(Color.BLACK);
+            Log.v(TAG, "Placed "+getPlayerById(playerId).getName()+" on " + boardPosition);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void updatePlayerSelection(int playerId, int boardPosition) {
+        try {
+            getPlayerById(playerId).getMarker()
+                    .setCenter(graph.getNodeById(boardPosition).getPosition());
+            getPlayerById(playerId).getMarker()
+                    .setStrokeColor(Color.RED);
+            Log.v(TAG, "Placed " + getPlayerById(playerId).getMarker().getStrokeColor() + " on " + boardPosition);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

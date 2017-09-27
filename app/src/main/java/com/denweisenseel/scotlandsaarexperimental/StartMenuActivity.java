@@ -28,7 +28,7 @@ public class StartMenuActivity extends AppCompatActivity implements GamenameInpu
 
     private final String TAG = "StartMenu";
     private String gameName = "Null";
-    View progressOverlay;
+    private View progressOverlay;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -14,7 +14,6 @@ import android.widget.TextView;
 
 public class DashboardFragment extends Fragment {
 
-
     private DashboardInteractionListener mListener;
 
     public DashboardFragment() {

@@ -45,6 +45,7 @@ import com.denweisenseel.scotlandsaarexperimental.data.Player;
 import com.denweisenseel.scotlandsaarexperimental.dialogFragments.QuitGameFragment;
 import com.denweisenseel.scotlandsaarexperimental.api.VolleyRequestQueue;
 import com.denweisenseel.scotlandsaarexperimental.services.GameLocationListener;
+import com.denweisenseel.scotlandsaarexperimental.util.AndroidUtil;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -71,7 +72,7 @@ import java.util.Date;
 
 public class GameActivity extends AppCompatActivity implements ChatFragment.ChatFragmentInteractionListener,
         OnMapReadyCallback, DashboardFragment.DashboardInteractionListener,
-        QuitGameFragment.OnFragmentInteractionListener, GameLocationListener.GPSCallbackInterface {
+        GameLocationListener.GPSCallbackInterface {
 
     //LAYOUT
     private CustomViewPager pager;
@@ -160,7 +161,7 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
                 switch (position) {
                     case 0:
                         if (pager.isEnabled()) {
-                            hideKeyboard(GameActivity.this);
+                            AndroidUtil.hideKeyboard(GameActivity.this);
                             pager.setCurrentItem(0);
                         } else {
                             Toast.makeText(GameActivity.this, "Game hasnt started yet", Toast.LENGTH_SHORT).show();
@@ -173,7 +174,7 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
                         unreadNotficationCounter = 0;
                         break;
                     case 2:
-                        hideKeyboard(GameActivity.this);
+                        AndroidUtil.hideKeyboard(GameActivity.this);
                         pager.setCurrentItem(2);
                         break;
                 }
@@ -191,38 +192,6 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
         gameModel.setGraph(graph);
     }
 
-    private void updatePlayerReachedMarker(int playerId, int boardPosition) {
-        try {
-            gameModel.getPlayerById(playerId).getMarker()
-            .setCenter(graph.getNodeById(boardPosition).getPosition());
-            gameModel.getPlayerById(playerId).getMarker()
-                    .setStrokeColor(Color.BLACK);
-            Log.v(TAG, "Placed "+gameModel.getPlayerById(playerId).getName()+" on " + boardPosition);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void updatePlayerSelection(int playerId, int boardPosition) {
-        try {
-            gameModel.getPlayerById(playerId).getMarker()
-                    .setCenter(graph.getNodeById(boardPosition).getPosition());
-            gameModel.getPlayerById(playerId).getMarker()
-                    .setStrokeColor(Color.RED);
-            Log.v(TAG, "Placed " + gameModel.getPlayerById(playerId).getMarker().getStrokeColor() + " on " + boardPosition);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void setDashboardFramentGameState(String gameTurn){
-        dashboardFragment.setGameState(gameTurn);
-    }
-
-    private void setDashboardFramentPlayerType(){
-        dashboardFragment.setPlayerType(gameModel.isMisterX());
-    }
-
     public void requestQuitGameDialog() {
         FragmentManager fm = getFragmentManager();
         QuitGameFragment editGamenameDialogFragment = QuitGameFragment.newInstance();
@@ -233,12 +202,6 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
         chatFragment.sendMessage(chatMessage);
     }
 
-
-    @Override
-    public void onYesButtonClicked() {
-        //TODO Actually kick the player out of the game.
-        finish();
-    }
 
     public void onMapReady(final GoogleMap googleMap) {
         //TODO Setup map constraints - Those var values should be finals somewhere! Please redo (5 min)
@@ -317,8 +280,10 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
     }
 
     private void populateGameModel(String input) throws JSONException {
+        //TODO Those constants should be moved to.. constants
         JSONObject json = new JSONObject(input);
         gameModel.setMisterX(json.getBoolean("isMisterX"));
+        gameModel.setId(json.getInt("playerId"));
 
         JSONObject gameState = json.getJSONObject("gameState");
         JSONArray playerArray = gameState.getJSONArray("playerList");
@@ -337,7 +302,6 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
     }
 
     private void placeDataOnMap() {
-
         mapFragment.getMapAsync(new OnMapReadyCallback() {
             @Override
             public void onMapReady(GoogleMap googleMap) {
@@ -360,23 +324,26 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
                     switch(id) {
                         case 0: color = Color.BLACK;
                             break;
-                        case 1: color = Color.GREEN;
+                        case 1: color = Color.parseColor("#79FF0D");
                             break;
                         case 2:
-                            color = Color.MAGENTA;
+                            color = Color.parseColor("#FF6B62");
                             break;
                         case 3:
-                            color = Color.RED;
+                            color = Color.parseColor("#804EE8");
                             break;
                         case 4:
-                            color = Color.YELLOW;
+                            color = Color.parseColor("#55F9FF");
                             break;
                         case 5:
-                            color = Color.BLUE;
+                            color = Color.parseColor("#9CFF6F");
                             break;
                         default:
                             color = Color.LTGRAY;
                     }
+
+                    if(id == gameModel.getId()) navigation.setDefaultBackgroundColor(color);
+
                     if(p.isMisterX() && !gameModel.isMisterX()) {
                         Circle c = googleMap.addCircle(new CircleOptions()
                                 .center(gameModel.getMarker(p.getBoardPosition()).getPosition())
@@ -489,9 +456,7 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
     public void stopListening() {
         locationManager.removeUpdates(locationListener);
     }
-
     //GPS DONE
-
 
     //This is the reveal marker.
     public void setMisterXMarker(final int misterXMarker) {
@@ -508,15 +473,6 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
         } else {
             gameModel.getMisterXCircle().setCenter(gameModel.getGraph().getNodeById(misterXMarker).getPosition());
         }
-    }
-
-    public static void hideKeyboard(Activity activity) {
-        InputMethodManager imm = (InputMethodManager) activity.getSystemService(Activity.INPUT_METHOD_SERVICE);
-        View view = activity.getCurrentFocus();
-        if (view == null) {
-            view = new View(activity);
-        }
-        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
 
     @Override
@@ -536,21 +492,21 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
                         e.printStackTrace();
                     }
                     navigation.enableItemAtPosition(0);
-                    setDashboardFramentPlayerType();
+                    dashboardFragment.setPlayerType(gameModel.isMisterX());
                     dashboardFragment.showGameState();
                 } else if (intent.getAction().equals(getString(R.string.GAME_TURN_START_X))) {
-                    setDashboardFramentGameState(getString(R.string.GAME_TURN_START_X));
+                    dashboardFragment.setGameState(getString(R.string.GAME_TURN_START_X));
                 } else if (intent.getAction().equals(getString(R.string.TURN_START_PLAYER))) {
-                    setDashboardFramentGameState(getString(R.string.TURN_START_PLAYER));
+                    dashboardFragment.setGameState(getString(R.string.TURN_START_PLAYER));
                 } else if(intent.getAction().equals(getString(R.string.GAME_POSITION_SELECTED))) {
                     int boardPosition = intent.getIntExtra("boardPosition", -1);
                     int playerId = intent.getIntExtra("playerId", -1);
-                    updatePlayerSelection(playerId, boardPosition);
+                    gameModel.updatePlayerSelection(playerId, boardPosition);
                 } else if (intent.getAction().equals(getString(R.string.GAME_POSITION_REACHED))) {
                     int playerId = intent.getIntExtra("playerId", -1);
                     int boardPosition = intent.getIntExtra("boardPosition", -1);
                     Log.v(TAG, "Updating playerPosition");
-                    updatePlayerReachedMarker(playerId, boardPosition);
+                    gameModel.updatePlayerReachedMarker(playerId, boardPosition);
                 } else if(intent.getAction().equals(getString(R.string.GAME_REVEAL_X))) {
                     int misterXPos = intent.getIntExtra("boardPosition", -1);
                     setMisterXMarker(misterXPos);
@@ -580,7 +536,6 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
         LocalBroadcastManager.getInstance(this).registerReceiver(gameStateReceiver, new IntentFilter(getString(R.string.GAME_LOST)));
         LocalBroadcastManager.getInstance(this).registerReceiver(gameStateReceiver, new IntentFilter(getString(R.string.GAME_POSITION_SELECTED)));
     }
-
 
     @Override
     public void onMessageReceived() {

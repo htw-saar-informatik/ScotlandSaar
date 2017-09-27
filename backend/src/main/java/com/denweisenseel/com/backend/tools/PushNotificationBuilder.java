@@ -51,11 +51,11 @@ public class PushNotificationBuilder {
         public static final String TIME_STAMP = "timeStamp";
         public static final String GAME_STATE = "gameState";
         public static final String ARE_YOU_MISTER_X = "isMisterX";
+        public static final String PLAYER_ID = "playerId";
     }
 
 
     class PushNotification {
-
 
         private HashMap<String, Object> requestAttributes = new HashMap<String, Object>();
         private HashMap<String, Object> notificationAttributes = new HashMap<String,Object>();
