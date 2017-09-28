@@ -430,6 +430,12 @@ public class GameActivity extends AppCompatActivity implements ChatFragment.Chat
         VolleyRequestQueue.getInstance(this).addToRequestQueue(gameRequest);
     }
 
+    @Override
+    public void updateDistance(Float distance) {
+        Log.v(TAG, "Distance will now be Updated");
+        dashboardFragment.updateDistance(distance);
+    }
+
     public void listenForUpdates() {
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},1001);

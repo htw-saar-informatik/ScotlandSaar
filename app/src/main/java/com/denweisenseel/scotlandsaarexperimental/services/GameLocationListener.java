@@ -15,10 +15,17 @@ public class GameLocationListener implements LocationListener {
 
     private static final String TAG = "GameLocationListener";
     private Location targetLocation;
+    private Location oldLocation;
+    private Location currentLocation;
+    private Float distance;
     private GPSCallbackInterface gpsCallbackInterface;
 
+
     public GameLocationListener(GPSCallbackInterface gpsCallbackInterface) {
+        distance = 0.0f;
         this.gpsCallbackInterface = gpsCallbackInterface;
+        oldLocation = null;
+        currentLocation = null;
     }
 
     @Override
@@ -31,6 +38,31 @@ public class GameLocationListener implements LocationListener {
             } else {
                 Log.i(TAG, "NOT CLOSE ENOUGH");
             }
+        }
+
+        if (currentLocation == null && oldLocation == null){
+            Log.i(TAG, "Updating distance" +distance);
+            currentLocation = location;
+        }
+
+        if (currentLocation != null && oldLocation == null){
+            Log.i(TAG, "Updating no distance"+distance);
+            oldLocation = currentLocation;
+            currentLocation = location;
+        }
+
+        if (currentLocation != null && oldLocation == null){
+            Log.i(TAG, "Updating no distance" +distance);
+            oldLocation = currentLocation;
+            currentLocation = location;
+        }
+
+        if (currentLocation != null && oldLocation != null){
+            Log.i(TAG, "Updating distance" +distance);
+            oldLocation = currentLocation;
+            currentLocation = location;
+            distance += oldLocation.distanceTo(currentLocation);
+            gpsCallbackInterface.updateDistance(distance);
         }
     }
 
@@ -58,5 +90,6 @@ public class GameLocationListener implements LocationListener {
     public interface GPSCallbackInterface {
         void gpsDeactivated(String s);
         void updatePosition(Location location);
+        void updateDistance(Float distance);
     }
 }

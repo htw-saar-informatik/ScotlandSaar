@@ -113,4 +113,9 @@ public class DashboardFragment extends Fragment {
         TextView playerState = (TextView) this.getView().findViewById(R.id.dashboard_player_type);
         playerState.setVisibility(View.VISIBLE);
     }
+
+    public void updateDistance(Float distance){
+        TextView gameState = (TextView) this.getView().findViewById(R.id.dashboard_distance);
+        gameState.setText(distance.toString()+"m");
+    }
 }
