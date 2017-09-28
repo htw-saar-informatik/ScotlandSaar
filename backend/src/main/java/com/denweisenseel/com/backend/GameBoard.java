@@ -49,7 +49,7 @@ public class GameBoard {
 
     private int     turnCounter = 0;
     private boolean turnState = X_TURN;
-    private boolean gpsEnabled = true;
+    private boolean gpsEnabled = false;
     private int idCount = 0;
 
 
@@ -126,14 +126,17 @@ public class GameBoard {
 
     }
 
-
-
     public MakeMoveResponseBean makeMove(String fireBaseToken, int targetNodeId) throws PlayerNotFoundException {
         Player p = getPlayerByFirebaseToken(fireBaseToken);
 
 
         System.out.println("Request von " +p.getName() + "will zu " + targetNodeId);
         MakeMoveResponseBean responseBean = new MakeMoveResponseBean();
+
+        if(targetNodeId == p.getBoardPosition()) {
+            responseBean.setData("Can't move to the same position.");
+            return responseBean; // Selbe Position wie vorher
+        }
 
 
         if(p.getPlayerState() == Player.PlayerState.IS_MOVING) {
