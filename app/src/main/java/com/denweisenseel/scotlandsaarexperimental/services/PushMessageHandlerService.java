@@ -3,6 +3,7 @@ package com.denweisenseel.scotlandsaarexperimental.services;
 import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Intent;
+import android.location.LocationManager;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
@@ -16,6 +17,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+
+import static com.denweisenseel.scotlandsaarexperimental.R.string.GAME_TURN_START_X;
+import static com.denweisenseel.scotlandsaarexperimental.R.string.playerId;
 
 public class PushMessageHandlerService extends FirebaseMessagingService {
 
@@ -36,6 +40,9 @@ public class PushMessageHandlerService extends FirebaseMessagingService {
         // Check if message contains a data payload.
         if (remoteMessage.getData().size() > 0) {
             Log.d(TAG, "Message data payload: " + remoteMessage.getData());
+
+            // TODO: parse packet type better, later redo protocol to send bytes/ints instead of strings (which we did for readability)
+
 
             Map<String, String> m = remoteMessage.getData();
 
@@ -59,10 +66,39 @@ public class PushMessageHandlerService extends FirebaseMessagingService {
                 Log.i("TEST", args);
                 forwardToMap(getString(R.string.LOBBY_GAME_START),  args);
             } else if(m.get((getString(R.string.protocol_type))).equals(getString(R.string.GAME_TURN_START_X))) {
+                forwardToMap(getString(R.string.GAME_TURN_START_X), null);
+                sendTurnStartToDashboard(getString(R.string.GAME_TURN_START_X));
+            } else if(m.get((getString(R.string.protocol_type))).equals(getString(R.string.TURN_START_PLAYER))) {
+                forwardToMap(getString(R.string.TURN_START_PLAYER), null);
+                sendTurnStartToDashboard(getString(R.string.TURN_START_PLAYER));
+            } else if(m.get(getString(R.string.protocol_type)).equals(getString(R.string.GAME_POSITION_REACHED))) {
+                int boardPosition = Integer.valueOf(m.get("playerPosition"));
+                int playerId = Integer.valueOf(m.get("playerPositionId"));
+                Log.i(TAG, "Player with" + playerId + " arrived at position "+boardPosition);
+                sendPlayerUpdateToLobby(getString(R.string.GAME_POSITION_REACHED), playerId,boardPosition);
+                //TODO: Send information to activity, update map
+            } else if(m.get(getString(R.string.protocol_type)).equals(getString(R.string.GAME_POSITION_SELECTED))) {
+                int boardPosition = Integer.valueOf(m.get("playerPosition"));
+                int playerId = Integer.valueOf(m.get("playerPositionId"));
+                Log.i(TAG, "Player with" + playerId + " selected position "+boardPosition);
+                sendPlayerSelectionToLobby(getString(R.string.GAME_POSITION_SELECTED), playerId,boardPosition);
+                //TODO: Send information to activity, update map (Player  with id selected something)
+            } else if(m.get(getString(R.string.protocol_type)).equals(getString(R.string.GAME_WON))) {
+                Log.i(TAG, "Player caught Mister X");
+                sendGameEndedToLobby(getString(R.string.GAME_WON));
 
+            } else if(m.get(getString(R.string.protocol_type)).equals(getString(R.string.GAME_LOST))) {
+                Log.i(TAG, "Mister X won!");
+                sendGameEndedToLobby(getString(R.string.GAME_LOST));
+            } else if(m.get(getString(R.string.protocol_type)).equals(getString(R.string.GAME_REVEAL_X))) {
+                int misterXPos = Integer.valueOf(m.get(getString(R.string.MISTER_X_POSITION)));
+                Log.i(TAG, "Mister X revealed at " +misterXPos);
+                sendMisterXUpdateToLobby(misterXPos);
+            } else if(m.get(getString(R.string.protocol_type)).equals(getString(R.string.GAME_X_SURROUNDED))) {
+                int misterXPos = Integer.valueOf(m.get(getString(R.string.MISTER_X_POSITION)));
+                Log.i(TAG, "Mister X can't move anymore, revealed at " +misterXPos);
+                //TODO: Send information to activity, update map (Player  with id selected something)
             }
-
-
             //GAME
 
 
@@ -76,6 +112,40 @@ public class PushMessageHandlerService extends FirebaseMessagingService {
 
         // Also if you intend on generating your own notifications as a result of a received FCM
         // message, here is where that should be initiated. See sendNotification method below.
+    }
+
+    private void sendPlayerSelectionToLobby(String string, int playerId, int boardPosition) {
+
+        Intent i = new Intent(string);
+        i.putExtra("playerId",playerId);
+        i.putExtra("boardPosition", boardPosition);
+
+        LocalBroadcastManager.getInstance(this).sendBroadcast(i);
+
+    }
+
+    private  void sendGameEndedToLobby(String string){
+        Intent i = new Intent(string);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(i);
+    }
+
+    private void sendMisterXUpdateToLobby(int position) {
+        Intent i = new Intent(getString(R.string.GAME_REVEAL_X));
+        i.putExtra("boardPosition", position);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(i);
+    }
+
+    private void sendPlayerUpdateToLobby(String string, int playerId, int boardPosition) {
+        Intent i = new Intent(string);
+        i.putExtra("playerId", playerId);
+        i.putExtra("boardPosition", boardPosition);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(i);
+
+    }
+
+    private void sendTurnStartToDashboard(String string) {
+        Intent i = new Intent(string);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(i);
     }
 
     private void forwardToMap(String string, String args) {

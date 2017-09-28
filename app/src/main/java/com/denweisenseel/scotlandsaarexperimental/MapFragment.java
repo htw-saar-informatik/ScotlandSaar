@@ -1,5 +1,6 @@
 package com.denweisenseel.scotlandsaarexperimental;
 
+import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 
 /**
@@ -8,7 +9,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 
 public class MapFragment extends SupportMapFragment {
 
-    //no
+    //Could move some functions here!
 
 
 }

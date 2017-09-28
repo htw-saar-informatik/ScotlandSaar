@@ -10,7 +10,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
@@ -19,8 +18,7 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.denweisenseel.scotlandsaarexperimental.adapter.GameListModelAdapter;
 import com.denweisenseel.scotlandsaarexperimental.api.RequestBuilder;
 import com.denweisenseel.scotlandsaarexperimental.data.GameListInfoParcelable;
-import com.denweisenseel.scotlandsaarexperimental.data.Player;
-import com.denweisenseel.scotlandsaarexperimental.data.VolleyRequestQueue;
+import com.denweisenseel.scotlandsaarexperimental.api.VolleyRequestQueue;
 import com.google.firebase.iid.FirebaseInstanceId;
 
 import org.json.JSONArray;
@@ -35,8 +33,8 @@ public class GameListActivity extends AppCompatActivity {
     private ArrayList<GameListInfoParcelable> gameList = new ArrayList<>();
     private GameListModelAdapter gameListAdapter;
     private final String TAG = "GAMELIST";
-
-    SwipeRefreshLayout srl;
+    private View progressOverlay;
+    private SwipeRefreshLayout srl;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,8 +66,10 @@ public class GameListActivity extends AppCompatActivity {
     }
 
     private void joinGame(final long gameId) {
+        progressOverlay = findViewById(R.id.progress_overlay);
+        progressOverlay.setVisibility(View.VISIBLE);
         String firebaseToken = FirebaseInstanceId.getInstance().getToken();
-        String gameIdentiier = String.valueOf(gameId);
+        final String gameIdentiier = String.valueOf(gameId);
         String playerName = getSharedPreferences(getString(R.string.gameData),Context.MODE_PRIVATE).getString(getString(R.string.username),"NULL");
 
         String args[] = {gameIdentiier,firebaseToken,playerName};
@@ -79,12 +79,10 @@ public class GameListActivity extends AppCompatActivity {
             public void onResponse(JSONObject response) {
                 try {
                     if(response.getBoolean("success")){ //response.has(getString(R.string.protocol_success))) {
-
+                        progressOverlay.setVisibility(View.GONE);
                         Intent i = new Intent(GameListActivity.this, GameActivity.class);
                         ArrayList<String> players = new ArrayList<String>();
-
-                        SharedPreferences.Editor editor = getSharedPreferences(getString(R.string.gameData),Context.MODE_PRIVATE).edit();
-                        editor.putLong(getString(R.string.gameId), Long.valueOf(gameId));
+                        i.putExtra(getString(R.string.gameId), gameIdentiier);
                         int playerId = response.getInt(getString(R.string.playerId));
                         savePlayerId(playerId);
                         for (int x = 0; x < response.getJSONArray("playerInLobby").length(); x++){
@@ -93,9 +91,10 @@ public class GameListActivity extends AppCompatActivity {
                         i.putExtra(getString(R.string.host),false);
                         i.putExtra("players", players);
                         startActivity(i);
-                        Log.i(TAG, "Puted the playerArray into the intent");
+                        finish();
                     }
                 } catch (JSONException e) {
+                    progressOverlay.setVisibility(View.GONE);
                     e.printStackTrace();
                 }
             }
@@ -117,8 +116,7 @@ public class GameListActivity extends AppCompatActivity {
     }
 
     private void fetchGameList() {
-        String noArgs[] = {}; //TODO Refactor this! its silly to pass a empty string array (1 hour)
-        JsonObjectRequest gameRequest = new JsonObjectRequest(Request.Method.GET, RequestBuilder.buildRequestUrl(RequestBuilder.GET_GAMELIST, noArgs ),null, new Response.Listener<JSONObject>() {
+        JsonObjectRequest gameRequest = new JsonObjectRequest(Request.Method.GET, RequestBuilder.buildRequestUrl(RequestBuilder.GET_GAMELIST),null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 try {

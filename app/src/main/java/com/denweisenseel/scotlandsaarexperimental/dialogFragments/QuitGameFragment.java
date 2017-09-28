@@ -24,7 +24,6 @@ public class QuitGameFragment extends DialogFragment {
 
     private static final String TAG = "Quitting Game?";
 
-    private OnFragmentInteractionListener mListener;
 
     /**
      * Use this factory method to create a new instance of
@@ -59,7 +58,7 @@ public class QuitGameFragment extends DialogFragment {
         yesButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mListener.onYesButtonClicked();
+               getActivity().finish();
             }
         });
 
@@ -73,22 +72,11 @@ public class QuitGameFragment extends DialogFragment {
 
     }
 
-    public void onButtonPressed() {
-        if (mListener != null) {
-            mListener.onYesButtonClicked();
-        }
-    }
 
     @TargetApi(23)
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
-        }
     }
 
     @SuppressWarnings("deprecation")
@@ -103,16 +91,6 @@ public class QuitGameFragment extends DialogFragment {
     @Override
     public void onDetach() {
         super.onDetach();
-        mListener = null;
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     **/
-    public interface OnFragmentInteractionListener {
-        void onYesButtonClicked();
-    }
 }

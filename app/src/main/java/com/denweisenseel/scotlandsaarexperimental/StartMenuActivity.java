@@ -16,7 +16,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.denweisenseel.scotlandsaarexperimental.api.RequestBuilder;
-import com.denweisenseel.scotlandsaarexperimental.data.VolleyRequestQueue;
+import com.denweisenseel.scotlandsaarexperimental.api.VolleyRequestQueue;
 import com.denweisenseel.scotlandsaarexperimental.dialogFragments.GamenameInputFragment;
 import com.denweisenseel.scotlandsaarexperimental.dialogFragments.UsernameInputFragment;
 import com.google.firebase.iid.FirebaseInstanceId;
@@ -28,11 +28,14 @@ public class StartMenuActivity extends AppCompatActivity implements GamenameInpu
 
     private final String TAG = "StartMenu";
     private String gameName = "Null";
+    private View progressOverlay;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        progressOverlay = findViewById(R.id.progress_overlay);
+        progressOverlay.setVisibility(View.GONE);
 
         Button startGame = (Button) findViewById(R.id.STARTMENU_StartGame);
         startGame.setOnClickListener(new View.OnClickListener() {
@@ -55,6 +58,9 @@ public class StartMenuActivity extends AppCompatActivity implements GamenameInpu
     protected void onStart() {
         SharedPreferences sharedPref = this.getSharedPreferences(getString(R.string.gameData),Context.MODE_PRIVATE);
 
+        //TODO Check for Username, Check for Permissions (GPS, FileSystem), Check for exisiting variables, delete them if unnecessary
+
+
         if(sharedPref.contains(getString(R.string.username))) {
             Toast.makeText(this, "Hallo " +sharedPref.getString(getString(R.string.username), "NULL"),Toast.LENGTH_SHORT).show();;
         } else {
@@ -67,6 +73,8 @@ public class StartMenuActivity extends AppCompatActivity implements GamenameInpu
             sharedPref.edit().remove(getString(R.string.gameId));
             //TODO check if game is still alive, rejoin! @Issue 001 (10 Hours)
         }
+
+        //TODO move those checks into functions, -> checkUsername() -> Callback to checkPermissions -> Callback to var checks!
 
         super.onStart();
     }
@@ -93,13 +101,13 @@ public class StartMenuActivity extends AppCompatActivity implements GamenameInpu
             @Override
             public void onResponse(JSONObject response) {
                 try {
-                    long gameId = response.getLong(getString(R.string.protocol_gameId));
+                    String gameId = response.getString(getString(R.string.protocol_gameId));
                     int id = response.getInt(getString(R.string.playerId));
-                    saveGameId(gameId);
                     savePlayerId(id);
                     Log.i(TAG, "Game created! ID: "+gameId);
                     Intent i = new Intent(StartMenuActivity.this, GameActivity.class);
                     i.putExtra(getString(R.string.host), true);
+                    i.putExtra(getString(R.string.gameId), gameId);
                     startActivity(i);
                     finish();
 
@@ -149,6 +157,7 @@ public class StartMenuActivity extends AppCompatActivity implements GamenameInpu
     @Override
     public void onInput(String string) {
         gameName = string;
+        progressOverlay.setVisibility(View.VISIBLE);
         startGame();
     }
 }

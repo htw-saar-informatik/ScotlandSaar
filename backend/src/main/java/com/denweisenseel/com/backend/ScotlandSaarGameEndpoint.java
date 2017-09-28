@@ -8,6 +8,7 @@ package com.denweisenseel.com.backend;
 
 import com.denweisenseel.com.backend.beans.GameListBean;
 import com.denweisenseel.com.backend.beans.GameStateBean;
+import com.denweisenseel.com.backend.beans.MakeMoveResponseBean;
 import com.denweisenseel.com.backend.beans.ResponseBean;
 import com.denweisenseel.com.backend.data.Geolocation;
 import com.denweisenseel.com.backend.data.Player;
@@ -108,27 +109,11 @@ public class ScotlandSaarGameEndpoint {
         return response;
     }
 
-
-    @ApiMethod(name = "updatePosition")
-    public ResponseBean updatePosition(@Named("id") long id,@Named("fireBaseToken") String fireBaseToken, Geolocation geolocation) throws PlayerNotFoundException {
-
-        GameBoard gameBoard = ofy().load().type(GameBoard.class).id(id).now();
-        boolean success = gameBoard.updatePosition(fireBaseToken,geolocation);
-        ofy().save().entity(gameBoard).now();
-
-        ResponseBean response = new ResponseBean();
-        System.out.println(gameBoard.getPlayerList().size());
-        response.setSuccess(success);
-
-        return response;
-    }
-
     @ApiMethod(name = "gameList")
     public ArrayList<GameListBean> getGameList() {
 
         ArrayList<GameListBean> gameList= new ArrayList<GameListBean>();
 
-        //TODO We could do this via streams, but, because I didnt want to use my brain, here is me doing some loopy stuff
 
         List<GameBoard> games = ofy().load().type(GameBoard.class).list();
 
@@ -165,22 +150,33 @@ public class ScotlandSaarGameEndpoint {
     }
 
     @ApiMethod(name = "makeMove")
-    public ResponseBean makeMove(@Named("id") long id,  @Named("fireBaseToken") String token, @Named("targetPosition") int targetPosition) {
+    public MakeMoveResponseBean makeMove(@Named("id") long id, @Named("fireBaseToken") String token, @Named("targetPosition") int targetPosition) throws PlayerNotFoundException {
         GameBoard board = ofy().load().type(GameBoard.class).id(id).now();
-        boolean success = false;
-        ResponseBean bean = new ResponseBean();
-        try {
-             success =  board.makeMove(token, targetPosition);
-        } catch (PlayerNotFoundException e) {
+        MakeMoveResponseBean bean;
 
-        }
-
-
-        bean.setSuccess(success);
+        bean =  board.makeMove(token, targetPosition);
+        ofy().save().entity(board).now();
 
 
         return bean;
     }
 
+
+    @ApiMethod(name = "submitPosition")
+    public ResponseBean submitPosition(@Named("id") long id, @Named("fireBaseToken") String token, @Named("latitude") double latitude, @Named("longitude") double longitude) throws PlayerNotFoundException {
+
+        GameBoard gameBoard = ofy().load().type(GameBoard.class).id(id).now();
+        Geolocation geolocation = new Geolocation(latitude,longitude);
+        System.out.println(id + "" + token + "" + latitude + "" + longitude);
+        boolean success = gameBoard.updatePosition(token,geolocation);
+        ofy().save().entity(gameBoard).now();
+
+        ResponseBean response = new ResponseBean();
+        System.out.println(gameBoard.getPlayerList().size());
+        response.setSuccess(success);
+
+
+        return response;
+    }
 
 }

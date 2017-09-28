@@ -51,11 +51,11 @@ public class PushNotificationBuilder {
         public static final String TIME_STAMP = "timeStamp";
         public static final String GAME_STATE = "gameState";
         public static final String ARE_YOU_MISTER_X = "isMisterX";
+        public static final String PLAYER_ID = "playerId";
     }
 
 
     class PushNotification {
-
 
         private HashMap<String, Object> requestAttributes = new HashMap<String, Object>();
         private HashMap<String, Object> notificationAttributes = new HashMap<String,Object>();
@@ -169,6 +169,7 @@ public class PushNotificationBuilder {
         GAME_POSITION_SELECTED("SELECTED_POSITION"),
         GAME_TURN_START_PLAYER("TURN_START_PLAYER"),
         GAME_TURN_START_X("TURN_START_X"),
+        GAME_MISTER_X("YOU_MISTER_X"),
 
         //LOBBY related
         LOBBY_PLAYER_JOIN("PLAYER_JOIN"),
@@ -179,6 +180,7 @@ public class PushNotificationBuilder {
         GAME_WON("GAME_WON"),
         GAME_LOST("GAME_LOST"),
         GAME_X_SURROUNDED("MISTER_X_SURROUNDED"),
+
 
         //CHAT related
         CHAT_NEW_MESSAGE("NEW_MESSAGE");

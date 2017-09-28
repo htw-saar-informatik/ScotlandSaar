@@ -10,9 +10,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 
 public class DashboardFragment extends Fragment {
-
 
     private DashboardInteractionListener mListener;
 
@@ -36,7 +36,6 @@ public class DashboardFragment extends Fragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        Log.v("TEST","Pressed");
         Button startGame = (Button) view.findViewById(R.id.dashboard_startGame);
         startGame.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -62,7 +61,6 @@ public class DashboardFragment extends Fragment {
     }
 
     public void onStartGameButtonPressed() {
-        Log.v("TEST","Pressed");
         if (mListener != null) {
             mListener.onStartGame();
         }
@@ -88,5 +86,31 @@ public class DashboardFragment extends Fragment {
     public interface DashboardInteractionListener {
         void onStartGame();
         void onMakeMove();
+    }
+
+    public void setGameState(String player){
+        TextView gameState = (TextView) this.getView().findViewById(R.id.dashboard_game_state);
+        if (player.equals(getString(R.string.TURN_START_PLAYER))){
+            gameState.setText("Player Turn");
+        } else if (player.equals(getString(R.string.GAME_TURN_START_X))){
+            gameState.setText("Mr X Turn");
+        }
+    }
+
+    public void setPlayerType(Boolean isMrX){
+        TextView playerState = (TextView) this.getView().findViewById(R.id.dashboard_player_type);
+        if (isMrX){
+            playerState.setText("You are Mr. X");
+        } else{
+            playerState.setText("You are a detective");
+        }
+    }
+
+    public void showGameState(){
+        TextView gameState = (TextView) this.getView().findViewById(R.id.dashboard_game_state);
+        gameState.setVisibility(View.VISIBLE);
+
+        TextView playerState = (TextView) this.getView().findViewById(R.id.dashboard_player_type);
+        playerState.setVisibility(View.VISIBLE);
     }
 }
