@@ -1,0 +1,23 @@
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/progress_overlay"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:alpha="1.0"
+    android:animateLayoutChanges="true"
+    android:background="#303F9F"
+    android:clickable="false"
+    android:visibility="gone"
+    android:translationZ="99dp">
+
+    <ProgressBar
+        android:id="@+id/progress_overlay_startMenu"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:focusedByDefault="true"
+        android:translationZ="100dp"
+        android:indeterminate="true" />
+
+</FrameLayout>

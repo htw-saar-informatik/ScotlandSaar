@@ -1,0 +1,27 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="com.denweisenseel.scotlandsaarexperimental.ChatFragment"
+    android:weightSum="1"
+    android:layout_weight="1">
+
+
+    <ListView
+        android:id="@+id/chat_fragment_listview"
+        android:layout_width="match_parent"
+        android:layout_height="271dp"
+        android:layout_weight="0.98" />
+
+    <EditText
+        android:id="@+id/chat_fragment_chatMessage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:hint="@string/hint_chat_message"
+        android:layout_gravity="center"
+        />
+</LinearLayout>
