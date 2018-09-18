@@ -10,6 +10,7 @@ Bei diesem Projekt handelt es sich um eine prototypische Implementierung. Darüb
 Ein wesentlicher Bestandteil der Android-Anwendung ist [AHBottomnavigation] (https://github.com/aurelhubert/ahbottomnavigation).
 
 Dem Spiel liegt eine Karte der saarländischen Hauptstadt Saarbrücken zugrunde, woraus sich auch der Name des Projekts herleitet. Es ist aber möglich Karten weiter Städte für das Spiel aufzubereiten und in das Spiel zu integrieren. 
+
 ---
 
 ScorlandSaar is an augmented reality adaptation of the board game classic [Scotland Yard](https://en.wikipedia.org/wiki/Scotland_Yard_(board_game)). The game idea was adapted for smartphones. Instead of controlling characters on a game board, players use their smartphones to roam the city. The smartphone application allows players to track the positions of other players as well as the course of the game. The goal is to catch the covert Mister X.
