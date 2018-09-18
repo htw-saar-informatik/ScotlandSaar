@@ -9,7 +9,7 @@ Bei diesem Projekt handelt es sich um eine prototypische Implementierung. Darüb
 
 Ein wesentlicher Bestandteil der Android-Anwendung ist [AHBottomnavigation] (https://github.com/aurelhubert/ahbottomnavigation).
 
-Dem Spiel liegt eine Karte der saarländischen Hauptstadt Saarbrücken zugrunde, woraus sich auch der Name des Projekts herleitet. Es ist aber möglich Karten weiter Städte für das Spiel aufzubereiten und in das Spiel zu integrieren. 
+Dem Spiel liegt eine Karte der saarländischen Landeshauptstadt Saarbrücken zugrunde, woraus sich auch der Name des Projekts herleitet. Es ist aber möglich Karten weiter Städte für das Spiel aufzubereiten und in das Spiel zu integrieren. 
 
 ---
 
@@ -21,4 +21,4 @@ Please note that this project is a prototype implementation. Moreover, API Keys 
 
 An integral part of the Android application is [AHBottomnavigation](https://github.com/aurelhubert/ahbottomnavigation).
 
-The game is based on a map of the Saarland capital Saarbrücken, from which the name of the project is derived. However, it is also possible to integrate maps of other cities into the game.
+The game is based on a map of the Saarland state capital Saarbrücken, from which the name of the project is derived. However, it is also possible to integrate maps of other cities into the game.
